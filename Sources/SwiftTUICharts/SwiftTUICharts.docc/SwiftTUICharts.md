@@ -1,10 +1,10 @@
-# ``TerminalUICharts``
+# ``SwiftTUICharts``
 
-Compact charts and metric-oriented views built on the same `View` and `Core` foundations as the rest of TerminalUI.
+Compact charts and metric-oriented views built on the same `View` and `Core` foundations as the rest of SwiftTUI.
 
 ## Overview
 
-`TerminalUICharts` is a separate product for operational surfaces, dashboards, and compact summaries.
+`SwiftTUICharts` is a separate product for operational surfaces, dashboards, and compact summaries.
 
 It includes:
 

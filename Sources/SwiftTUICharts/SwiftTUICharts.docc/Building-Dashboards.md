@@ -2,7 +2,7 @@
 
 ## Overview
 
-`TerminalUICharts` is designed for dense operational surfaces rather than for decorative charting.
+`SwiftTUICharts` is designed for dense operational surfaces rather than for decorative charting.
 
 The views in this module work best when they are paired with:
 
