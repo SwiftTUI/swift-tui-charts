@@ -1,2 +1,2 @@
-@_exported import Core
-@_exported import View
+@_exported import SwiftTUICore
+@_exported import SwiftTUIViews
