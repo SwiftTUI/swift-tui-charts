@@ -1,10 +1,8 @@
 import Foundation
+import SwiftTUIRuntime
 import Testing
 
 @testable import SwiftTUICharts
-@_spi(Testing) @testable import SwiftTUICore
-@testable import SwiftTUIRuntime
-@testable import SwiftTUIViews
 
 @MainActor
 @Suite("SwiftTUI chart and live-data stress behavior", .serialized)
@@ -19,7 +17,7 @@ private func chartDataExercise<Root: View>(
   makeRoot: (Int) -> Root,
   verify: (Int, RenderSnapshot) -> Void
 ) {
-  let renderer = DefaultRenderer(layoutEngine: .init(cache: MeasurementCache()))
+  let renderer = DefaultRenderer()
   let identity = testIdentity("ChartData", attempt)
 
   for generation in generations {
@@ -32,7 +30,7 @@ private func chartDataExercise<Root: View>(
       ),
       proposal: proposal
     )
-    let fresh = DefaultRenderer(layoutEngine: .init(cache: MeasurementCache())).render(
+    let fresh = DefaultRenderer().render(
       root,
       context: .init(identity: identity),
       proposal: proposal

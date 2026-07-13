@@ -1,7 +1,6 @@
 import Testing
 
 @testable import SwiftTUICharts
-@testable import SwiftTUICore
 
 @Suite("SwiftTUI chart allocation boundary stress behavior", .serialized)
 struct FrameworkStressChartAllocationBoundaryTests {

@@ -2,7 +2,6 @@ import Foundation
 import Testing
 
 @testable import SwiftTUICharts
-@testable import SwiftTUICore
 
 @Suite("LineChart raster helpers")
 struct LineChartCellMappingTests {
