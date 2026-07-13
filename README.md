@@ -54,8 +54,9 @@ targets: [
 ]
 ```
 
-> **Migrating from `swift-tui` ≤ 0.1.4:** `SwiftTUICharts` used to ship as a
-> product of the `swift-tui` package. It now lives here. Keep your
+> **Migrating from the in-framework `SwiftTUICharts`:** the module used to ship as a
+> product of the `swift-tui` package (releases before the repository split).
+> It now lives here. Keep your
 > `import SwiftTUICharts` lines as they are, add the `swift-tui-charts`
 > package dependency, and change the product declaration's `package:` from
 > `"swift-tui"` to `"swift-tui-charts"`.
