@@ -1,0 +1,14 @@
+.DS_Store
+/.build
+/Packages
+xcuserdata/
+DerivedData/
+.swiftpm/configuration/registries.json
+.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.netrc
+
+# Bazel symlinks.
+bazel-*
+
+# SwiftPM resolves dependencies fresh; libraries do not commit this.
+/Package.resolved

@@ -1,0 +1,257 @@
+name: Test
+
+# Remote verification of this repo's public contract: SwiftTUICharts builds
+# from a fresh clone with native tools only, resolving swift-tui through its
+# public tagged HTTPS dependency, and its test suite and public API baseline
+# pass. This runs the same command as the org root's
+# @swift_tui_charts//:native_gate (swiftly-managed `swift test` + API check),
+# so a red here means the org gate would be red too.
+#
+# The weekly run guards the no-push failure modes: a re-pointed upstream
+# release tag or a runner-image/toolchain change breaking resolution.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: charts-test-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SWIFTLY_VERSION: "1.1.1"
+
+jobs:
+  macos:
+    name: SwiftTUICharts tests (macOS)
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cache Swiftly toolchain
+        uses: actions/cache@v5
+        with:
+          path: ~/.swiftly
+          key: ${{ runner.os }}-swiftly-${{ hashFiles('.swift-version') }}
+          restore-keys: |
+            ${{ runner.os }}-swiftly-
+
+      - name: Install swiftly and Swift toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f "$HOME/.swiftly/env.sh" ]; then
+            curl -O https://download.swift.org/swiftly/darwin/swiftly.pkg
+            installer -pkg swiftly.pkg -target CurrentUserHomeDirectory
+            "$HOME/.swiftly/bin/swiftly" init --skip-install --quiet-shell-followup --assume-yes
+          fi
+          . "$HOME/.swiftly/env.sh"
+          hash -r
+          swift_version="$(tr -d '[:space:]' < .swift-version)"
+          swiftly install --use --assume-yes "$swift_version"
+          swiftly run swift --version
+          echo "$HOME/.swiftly/bin" >> "$GITHUB_PATH"
+          echo "SWIFTLY_HOME_DIR=$HOME/.swiftly" >> "$GITHUB_ENV"
+
+      - name: Cache SwiftPM
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            ~/.swiftpm
+          key: ${{ runner.os }}-swiftpm-${{ hashFiles('Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-swiftpm-
+
+      - name: Run native gate
+        shell: bash
+        run: tools/bazel/native_gate.sh
+
+  linux:
+    name: SwiftTUICharts tests (Linux)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Linux Swift dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libcurl4-openssl-dev
+
+      - name: Cache Swiftly toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.local/share/swiftly
+            ~/.local/bin/swiftly
+          key: ${{ runner.os }}-swiftly-${{ env.SWIFTLY_VERSION }}-${{ hashFiles('.swift-version') }}
+          restore-keys: |
+            ${{ runner.os }}-swiftly-${{ env.SWIFTLY_VERSION }}-
+
+      - name: Install swiftly and Swift toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          export SWIFTLY_HOME_DIR="$HOME/.local/share/swiftly"
+          export SWIFTLY_BIN_DIR="$HOME/.local/bin"
+          mkdir -p "$SWIFTLY_BIN_DIR"
+          export PATH="$SWIFTLY_BIN_DIR:$PATH"
+
+          if ! command -v swiftly >/dev/null 2>&1 || [ ! -f "${SWIFTLY_HOME_DIR}/env.sh" ]; then
+            tmpdir="$(mktemp -d)"
+            trap 'rm -rf "$tmpdir"' EXIT
+            cd "$tmpdir"
+            swiftly_archive="swiftly-${SWIFTLY_VERSION}-$(uname -m).tar.gz"
+            curl -fsSLO "https://download.swift.org/swiftly/linux/${swiftly_archive}"
+            tar -zxf "$swiftly_archive"
+            ./swiftly init --skip-install --quiet-shell-followup --assume-yes
+          fi
+
+          . "${SWIFTLY_HOME_DIR}/env.sh"
+          hash -r
+          swift_version="$(tr -d '[:space:]' < "$GITHUB_WORKSPACE/.swift-version")"
+          swiftly install --use --assume-yes "$swift_version"
+          swiftly run swift --version
+          echo "$SWIFTLY_BIN_DIR" >> "$GITHUB_PATH"
+          echo "SWIFTLY_HOME_DIR=$SWIFTLY_HOME_DIR" >> "$GITHUB_ENV"
+
+      - name: Cache SwiftPM
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/org.swift.swiftpm
+          key: ${{ runner.os }}-swiftpm-${{ hashFiles('Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-swiftpm-
+
+      - name: Run native gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          . "${SWIFTLY_HOME_DIR}/env.sh"
+          tools/bazel/native_gate.sh
+
+      - name: Release build
+        shell: bash
+        run: |
+          set -euo pipefail
+          . "${SWIFTLY_HOME_DIR}/env.sh"
+          swiftly run swift build -c release
+
+  wasi-cross-compile:
+    name: wasm32-wasi cross-compile
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # The toolchain version tracks the pinned .swift-version. The value is
+      # validated against a strict pattern before any downstream use so
+      # attacker-controlled file contents (e.g. on a fork PR) cannot inject
+      # shell into the steps below; it is then passed via env, never
+      # interpolated directly into a run script.
+      - name: Resolve pinned Swift version
+        id: swift
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(tr -d '[:space:]' < .swift-version)"
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+(\.[0-9]+)?$'; then
+            echo "::error::Unexpected .swift-version contents: '$version'"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Install Linux Swift dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libcurl4-openssl-dev
+
+      - name: Cache Swiftly toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.local/share/swiftly
+            ~/.local/bin/swiftly
+          key: ${{ runner.os }}-swiftly-${{ env.SWIFTLY_VERSION }}-${{ hashFiles('.swift-version') }}
+          restore-keys: |
+            ${{ runner.os }}-swiftly-${{ env.SWIFTLY_VERSION }}-
+
+      - name: Install swiftly and Swift toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          export SWIFTLY_HOME_DIR="$HOME/.local/share/swiftly"
+          export SWIFTLY_BIN_DIR="$HOME/.local/bin"
+          mkdir -p "$SWIFTLY_BIN_DIR"
+          export PATH="$SWIFTLY_BIN_DIR:$PATH"
+
+          if ! command -v swiftly >/dev/null 2>&1 || [ ! -f "${SWIFTLY_HOME_DIR}/env.sh" ]; then
+            tmpdir="$(mktemp -d)"
+            trap 'rm -rf "$tmpdir"' EXIT
+            cd "$tmpdir"
+            swiftly_archive="swiftly-${SWIFTLY_VERSION}-$(uname -m).tar.gz"
+            curl -fsSLO "https://download.swift.org/swiftly/linux/${swiftly_archive}"
+            tar -zxf "$swiftly_archive"
+            ./swiftly init --skip-install --quiet-shell-followup --assume-yes
+          fi
+
+          . "${SWIFTLY_HOME_DIR}/env.sh"
+          hash -r
+          swift_version="$(tr -d '[:space:]' < "$GITHUB_WORKSPACE/.swift-version")"
+          swiftly install --use --assume-yes "$swift_version"
+          swiftly run swift --version
+          echo "$SWIFTLY_BIN_DIR" >> "$GITHUB_PATH"
+          echo "SWIFTLY_HOME_DIR=$SWIFTLY_HOME_DIR" >> "$GITHUB_ENV"
+
+      - name: Install the wasm32-wasi Swift SDK
+        shell: bash
+        env:
+          SWIFT_VERSION: ${{ steps.swift.outputs.version }}
+        run: |
+          set -euo pipefail
+          . "${SWIFTLY_HOME_DIR}/env.sh"
+          case "$SWIFT_VERSION" in
+            6.3.1)
+              WASM_SDK_CHECKSUM="bd47baa20771f366d8beed7970afaa30742b2210097afd15f85427226d8f4cf2"
+              ;;
+            *)
+              echo "::error::No pinned wasm SDK checksum for Swift ${SWIFT_VERSION}"
+              exit 1
+              ;;
+          esac
+          if ! swiftly run swift sdk list | grep -q "swift-${SWIFT_VERSION}-RELEASE_wasm"; then
+            swiftly run swift sdk install \
+              "https://download.swift.org/swift-${SWIFT_VERSION}-release/wasm-sdk/swift-${SWIFT_VERSION}-RELEASE/swift-${SWIFT_VERSION}-RELEASE_wasm.artifactbundle.tar.gz" \
+              --checksum "$WASM_SDK_CHECKSUM"
+          fi
+          swiftly run swift sdk list
+
+      # --target, not --product: the target build is exactly the
+      # SwiftTUICharts closure (charts + SwiftTUIViews and below), without
+      # pulling deliberately non-WASI targets from the swift-tui graph.
+      - name: Cross-compile SwiftTUICharts for wasm32-wasi
+        shell: bash
+        env:
+          SWIFT_VERSION: ${{ steps.swift.outputs.version }}
+        run: |
+          set -euo pipefail
+          . "${SWIFTLY_HOME_DIR}/env.sh"
+          swiftly run swift build \
+            --swift-sdk "swift-${SWIFT_VERSION}-RELEASE_wasm" \
+            --target SwiftTUICharts
