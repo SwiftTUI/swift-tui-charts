@@ -47,7 +47,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/SwiftTUI/swift-tui.git",
-      exact: "0.1.6"
+      exact: "0.1.7"
     ),
     .package(
       url: "https://github.com/swiftlang/swift-docc-plugin.git",
