@@ -12,7 +12,7 @@ The views in this module work best when they are paired with:
 
 ## Choosing A Chart
 
-- Use ``ProgressView`` or ``Meter`` when the user cares about a single current value
+- Use `ProgressView` or ``Meter`` when the user cares about a single current value
 - Use ``ThresholdGauge`` when tone changes matter at well-defined boundaries
 - Use ``BarChart`` or ``ColumnChart`` when comparing multiple values directly
 - Use ``ComparisonChart`` or ``BulletChart`` when a baseline or target is important
