@@ -65,6 +65,47 @@ struct LineChartLineRasterTests {
     let column0Filled = (0..<4).contains { grid[$0][0] != nil }
     #expect(column0Filled && column1Filled)
   }
+
+  // A segment's vertical run lives in the *destination* column, so every
+  // sample joins its predecessor vertically. The final sample is no
+  // exception: its glyph must open toward the vertical that feeds it,
+  // otherwise it floats free of the line.
+
+  @Test("final sample rising off the previous one joins the vertical below it")
+  func finalSampleRisingJoinsVerticalBelow() {
+    let grid = rasterizeLine(
+      points: [.init(x: 0, y: 0), .init(x: 2, y: 0), .init(x: 3, y: 3)],
+      domain: LineChartDomain(x: 0...3, y: 0...3),
+      plotWidth: 4, plotHeight: 4
+    )
+    #expect(grid[3][3]?.glyph == "╯")  // foot of the rise, entered from the left
+    #expect(grid[2][3]?.glyph == "│")
+    #expect(grid[1][3]?.glyph == "│")
+    #expect(grid[0][3]?.glyph == "╭")  // final sample: opens downward
+  }
+
+  @Test("final sample falling off the previous one joins the vertical above it")
+  func finalSampleFallingJoinsVerticalAbove() {
+    let grid = rasterizeLine(
+      points: [.init(x: 0, y: 3), .init(x: 2, y: 3), .init(x: 3, y: 0)],
+      domain: LineChartDomain(x: 0...3, y: 0...3),
+      plotWidth: 4, plotHeight: 4
+    )
+    #expect(grid[0][3]?.glyph == "╮")  // crest of the fall, entered from the left
+    #expect(grid[1][3]?.glyph == "│")
+    #expect(grid[2][3]?.glyph == "│")
+    #expect(grid[3][3]?.glyph == "╰")  // final sample: opens upward
+  }
+
+  @Test("final sample level with the previous one stays a horizontal run")
+  func finalSampleLevelStaysHorizontal() {
+    let grid = rasterizeLine(
+      points: [.init(x: 0, y: 0), .init(x: 3, y: 0)],
+      domain: LineChartDomain(x: 0...3, y: 0...3),
+      plotWidth: 4, plotHeight: 4
+    )
+    #expect(grid[3][3]?.glyph == "─")
+  }
 }
 
 @Suite("LineChart area rasterization")

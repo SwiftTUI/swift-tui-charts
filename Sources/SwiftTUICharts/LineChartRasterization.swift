@@ -121,7 +121,11 @@ private func dataPointGlyph(
 
   if let previous, next == nil {
     if previous.row == current.row { return "─" }
-    return previous.row > current.row ? "╯" : "╮"
+    // `drawSegment` puts a segment's vertical run in the *destination*
+    // column, so the final sample is always fed from directly above or
+    // below — never from its left. Open toward that vertical, matching
+    // the `exitRight` half of the interior-sample table below.
+    return previous.row > current.row ? "╭" : "╰"
   }
 
   guard let previous, let next else { return "•" }
