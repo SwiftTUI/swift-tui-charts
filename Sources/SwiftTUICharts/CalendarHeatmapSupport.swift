@@ -1,17 +1,16 @@
 import Foundation
 import SwiftTUIViews
 
-/// The range used when a `CalendarHeatmap` has neither an explicit `range`
-/// nor any `days` to infer one from. It must not depend on wall-clock time:
-/// the rendered frame is a pure function of its inputs, so an empty heatmap
-/// renders the same cells on every run.
+/// If a `CalendarHeatmap` has no explicit `range` or `days`, it uses this range.
+/// This range must not depend on wall-clock time. The rendered frame is a pure function of its inputs.
+/// Thus, an empty heatmap renders the same cells on every run.
 func calendarHeatmapFallbackRange() -> ClosedRange<Date> {
   let reference = Date(timeIntervalSinceReferenceDate: 0)
   return reference...reference
 }
 
-/// Returns the minimum-to-maximum date range covered by `days`, or `nil`
-/// when the input is empty.
+/// Returns the minimum-to-maximum date range that `days` covers.
+/// If the input is empty, this function returns `nil`.
 func inferDateRange(_ days: [DateValue]) -> ClosedRange<Date>? {
   guard let first = days.first else { return nil }
   var lower = first.date
@@ -30,21 +29,20 @@ public enum CalendarHeatmapWeekStart: Hashable, Sendable {
 }
 
 struct CalendarHeatmapBucket: Equatable, Sendable {
-  /// `grid[weekdayRow][weekColumn]`. `nil` means "out of range" or "in
-  /// range, no data". The view layer distinguishes them by checking
-  /// whether the cell's date falls within `range`.
+  /// `grid[weekdayRow][weekColumn]`. `nil` means "out of range" or "in range, no data".
+  /// The view layer uses the cell date and `range` to distinguish these states.
   var grid: [[Double?]]
-  /// Column index → month label ("Jan", "Feb", ...) for the first week
-  /// of each month; empty string for columns that don't start a month.
+  /// Maps a column index to the month label for the first week of a month.
+  /// The label can be "Jan" or "Feb", for example.
+  /// The value is an empty string for columns that do not start a month.
   var monthHeader: [String]
-  /// Row index → day-of-week label ("", "Mon", "", "Wed", ...). Every
-  /// other row is labeled for compactness.
+  /// Maps a row index to a day-of-week label, such as "Mon" or "Wed".
+  /// Every other row has a label to keep the grid compact.
   var dayLabels: [String]
 }
 
-/// Bins `days` into a 7-row × N-column intensity grid using `calendar`
-/// and `weekStart`. Out-of-range and missing cells stay `nil`; duplicate
-/// dates have their values summed.
+/// Bins `days` into a 7-row × N-column intensity grid with `calendar` and `weekStart`.
+/// Out-of-range and missing cells stay `nil`. The function adds the values for duplicate dates.
 func bucketDays(
   _ days: [DateValue],
   range: ClosedRange<Date>,

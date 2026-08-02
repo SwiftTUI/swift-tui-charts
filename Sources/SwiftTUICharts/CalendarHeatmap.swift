@@ -166,9 +166,9 @@ extension CalendarHeatmap where Label == Text, Summary == Text {
 }
 
 extension CalendarHeatmap {
-  /// Toggle the "Less ░ ▒ ▓ █ More" scale legend below the grid.
-  /// `.hidden` clears it; `.bottom` / `.top` keep it visible (position
-  /// is currently fixed at the bottom for `CalendarHeatmap`).
+  /// Shows or hides the "Less ░ ▒ ▓ █ More" scale legend below the grid.
+  /// `.hidden` hides the legend. `.bottom` and `.top` show the legend.
+  /// `CalendarHeatmap` currently fixes the position at the bottom.
   public func chartLegend(_ config: LineChartLegendConfig) -> Self {
     var copy = self
     copy.showsScaleLegend = (config.position != .hidden)

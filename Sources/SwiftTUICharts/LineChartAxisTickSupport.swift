@@ -11,9 +11,9 @@ extension AxisTickLabel {
   init(col: Int, text: String) { self.init(row: 0, col: col, text: text) }
 }
 
-/// Computes X-axis tick labels for `LineChart`, snapping to calendar
-/// boundaries when `ticks` is `.dates(...)` and pinning the calendar's
-/// timezone onto the format style for deterministic rendering.
+/// Computes the X-axis tick labels for `LineChart`.
+/// If `ticks` is `.dates(...)`, the function aligns ticks with calendar boundaries.
+/// The function also applies the calendar time zone to the format style for deterministic output.
 func xAxisTickLabels(
   domain: ClosedRange<Double>,
   ticks: LineChartXAxis.Ticks,

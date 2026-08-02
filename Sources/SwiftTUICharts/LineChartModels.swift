@@ -12,9 +12,8 @@ public struct LineChartPoint: Hashable, Sendable {
 }
 
 extension LineChartPoint {
-  /// Convenience initializer that maps a `Date` to `x` via
-  /// `timeIntervalSinceReferenceDate`. The X-axis formatter decides whether
-  /// `x` is rendered as a date or as a number.
+  /// Maps a `Date` to `x` with `timeIntervalSinceReferenceDate`.
+  /// The X-axis formatter decides whether to show `x` as a date or a number.
   public init(date: Date, value: Double) {
     self.init(x: date.timeIntervalSinceReferenceDate, y: value)
   }
@@ -24,15 +23,14 @@ extension LineChartPoint {
 public enum LineChartSeriesStyle: Hashable, Sendable {
   /// Single-cell line raster between consecutive samples.
   case line
-  /// Same as `.line`, plus a shaded fill from the line down to the
-  /// chart's baseline.
+  /// Includes the complete `.line` rendering and adds a shaded fill from the line to the chart baseline.
   case area
-  /// Staircase between samples: horizontal segment at each sample's
-  /// Y, then a vertical jump to the next sample's Y. No diagonal.
+  /// Draws a horizontal segment at the Y value of each sample.
+  /// Then it draws a vertical segment to the Y value of the next sample.
   case step
 }
 
-/// A labeled, toned series of `LineChartPoint`s.
+/// A series of `LineChartPoint` values with a label and tone.
 public struct LineChartSeries: Hashable, Sendable {
   public var label: String
   public var points: [LineChartPoint]

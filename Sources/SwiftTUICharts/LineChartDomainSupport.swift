@@ -5,8 +5,8 @@ struct LineChartDomain: Equatable, Sendable {
   var y: ClosedRange<Double>
 }
 
-/// Computes the combined X/Y range across all series. Returns `nil` when
-/// no series contains points.
+/// Computes the combined X and Y ranges across all series.
+/// If no series contains points, this function returns `nil`.
 func plotDomain(series: [LineChartSeries]) -> LineChartDomain? {
   var minX = Double.infinity
   var maxX = -Double.infinity
@@ -35,8 +35,8 @@ func xCell(value: Double, domain: ClosedRange<Double>, plotWidth: Int) -> Int {
   return min(max(column, 0), plotWidth - 1)
 }
 
-/// Maps a domain Y value to a row index in `[0, plotHeight)`, inverted
-/// so row 0 corresponds to the top of the plot.
+/// Maps a domain Y value to an inverted row index in `[0, plotHeight)`.
+/// Thus, row 0 corresponds to the top of the plot.
 func yCell(value: Double, domain: ClosedRange<Double>, plotHeight: Int) -> Int {
   let span = domain.upperBound - domain.lowerBound
   guard span > 0, plotHeight > 0 else { return 0 }

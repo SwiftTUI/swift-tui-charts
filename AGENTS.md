@@ -1,17 +1,17 @@
 # AGENTS.md
 
 Guidance for Claude Code and other agentic assistants working in this
-repository. Keep this file concise; [README.md](README.md) is the public
-introduction and [docs/](docs/README.md) holds internal notes.
+repository. Keep this file concise. [README.md](README.md) is the public
+introduction. [docs/](docs/README.md) holds internal notes.
 
 ## What this repo is
 
 `swift-tui-charts` ships the `SwiftTUICharts` module: chart and metric views
 for [SwiftTUI](https://github.com/SwiftTUI/swift-tui). Every chart is an
 ordinary SwiftTUI `View` composed from the public `SwiftTUIViews` authoring
-surface — this package deliberately uses **no** package-internal framework
-API. The `swift-tui` dependency is a public, exact-tagged HTTPS dependency;
-only the SwiftTUI org's coordination overlay may rewrite it to a local path.
+surface. This package uses **no** package-internal framework API. The
+`swift-tui` dependency is a public, exact-tagged HTTPS dependency. Only the
+SwiftTUI org coordination overlay can rewrite it to a local path.
 
 ## Build & Test Commands
 
@@ -30,26 +30,27 @@ runs match the pinned toolchain in `.swift-version`.
 
 ## Structure
 
-- `Sources/SwiftTUICharts/` — one file per chart family plus `*Support.swift`
-  helpers and `SwiftTUICharts.docc/`. Charts import `SwiftTUIViews` only
-  (plus `Foundation` in date/calendar files).
-- `Tests/SwiftTUIChartsTests/` — Swift Testing suites; `Support/` holds the
-  rendered-text fixture harness (public SwiftTUIRuntime API only) and
-  `Fixtures/` the checked-in rendered fixtures (15 chart cases × 5 terminal
-  profiles). Treat fixture changes as evidence, not housekeeping.
+- `Sources/SwiftTUICharts/` — contains one file for each chart family,
+  `*Support.swift` helpers, and `SwiftTUICharts.docc/`. Charts import only
+  `SwiftTUIViews`. Date and calendar files also import `Foundation`.
+- `Tests/SwiftTUIChartsTests/` — contains the Swift Testing suites. `Support/`
+  contains the rendered-text fixture harness, which uses only public
+  SwiftTUIRuntime API. `Fixtures/` contains checked-in fixtures for 15 chart
+  cases and 5 terminal profiles. Treat fixture changes as evidence, not
+  housekeeping.
 
 ## Rules
 
-- Public API changes must be deliberate: regenerate
-  `docs/.public-api-baseline.txt` with the generate script and include the
-  diff in the same commit. The native gate fails on unreviewed drift.
+- For each public API change, regenerate `docs/.public-api-baseline.txt` with
+  the generation script. Include the baseline diff in the same commit. The
+  native gate fails on unreviewed drift.
 - No `PrimitiveView`/`ResolvableView`/`ResolveContext` usage — those are
   framework-internal. If a chart cannot be expressed with public composition,
-  that is a framework boundary conversation, not a local workaround.
-- Code style follows `.swift-format.json` (2-space indent, 100 columns);
-  `private` over `fileprivate`; ordered imports; no `AnyView` storage without
-  an `AnyView policy:` comment.
-- Swift 6.3 language mode with strict memory safety and the same upcoming
+  discuss the framework boundary. Do not add a local workaround.
+- Use the code style in `.swift-format.json`: 2-space indentation, 100
+  columns, ordered imports, and `private` instead of `fileprivate`.
+- Do not store `AnyView` without an `AnyView policy:` comment.
+- Use Swift 6.3 language mode, strict memory safety, and the same upcoming
   features as `swift-tui` (see `Package.swift`).
 - Use Swift Testing (`import Testing`, `@Test`, `#expect`) for tests.
 
@@ -63,6 +64,6 @@ runs match the pinned toolchain in `.swift-version`.
 
 ## Conventions
 
-- `AGENTS.md` is the real file; `CLAUDE.md` is a symlink to it.
+- `AGENTS.md` is the real file. `CLAUDE.md` is a symlink to it.
 - Docs in this repo describe the state of `HEAD` only. Planning and proposal
   documents live in the SwiftTUI org coordination root, not here.

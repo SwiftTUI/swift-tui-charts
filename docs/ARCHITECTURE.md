@@ -12,13 +12,14 @@ on the public `SwiftTUIViews` authoring surface of
   `PrimitiveView`/`ResolvableView` conformance, no `ResolveContext`, and no
   package-access lowering anywhere in this repository.
 - The single manifest dependency is the `SwiftTUIViews` product, pinned
-  `exact:` to a public `swift-tui` tag. `import SwiftTUIViews` is
-  self-sufficient: the product re-exports `SwiftTUICore`, which re-exports
-  `SwiftTUIGraph` and `SwiftTUIPrimitives`, so the value vocabulary
-  (`Color`, `AnyShapeStyle`, `SemanticMetadata`, geometry types) is visible.
+  `exact:` to a public `swift-tui` tag. The `SwiftTUIViews` product re-exports
+  `SwiftTUICore`. `SwiftTUICore` re-exports `SwiftTUIGraph` and
+  `SwiftTUIPrimitives`. Thus, `import SwiftTUIViews` also provides the value
+  vocabulary (`Color`, `AnyShapeStyle`, `SemanticMetadata`, and geometry
+  types).
 - `Exports.swift` re-exports `SwiftTUIViews`, so a consumer's
-  `import SwiftTUICharts` also sees the authoring surface — matching how the
-  module behaved when it shipped inside `swift-tui`.
+  `import SwiftTUICharts` also provides the authoring surface. This behavior
+  matches the former module in `swift-tui`.
 
 ## Source layout
 
@@ -38,8 +39,8 @@ One file per chart family (`BarChart.swift`, `LineChart.swift`, …) plus:
 
 Every chart attaches `SemanticMetadata` with `accessibilityRole: .image`, a
 synthesized (or caller-provided) label, and an `AccessibilityVisualContent`
-kind. Titled convenience initializers synthesize a summary so assistive
-output always hears a meaningful description; label-less custom charts
+kind. Titled convenience initializers create a summary. Thus, assistive output
+always receives a meaningful description. Custom charts without a label
 trigger the framework's missing-label diagnostic.
 
 ## Tests
@@ -48,11 +49,11 @@ trigger the framework's missing-label diagnostic.
   …) exercise the support functions directly via `@testable import`.
 - `ChartSurfaceRenderTests` pins the user-visible glyph contract through the
   public one-shot renderer.
-- `ChartRenderedTextFixtureTests` verifies 15 chart cases × 5 terminal
-  capability profiles against checked-in rendered fixtures
+- `ChartRenderedTextFixtureTests` compares 15 chart cases across 5 terminal
+  capability profiles with checked-in rendered fixtures
   (`Tests/SwiftTUIChartsTests/Fixtures/`).
 - `ChartAccessibilityTests` pins assistive output through
   `SwiftTUITestSupport`'s linear accessibility helper.
-- The `FrameworkStress*` suites stress retained-render churn: every
-  generation re-renders under a retained graph and asserts raster/semantic
-  equality with a fresh render.
+- The `FrameworkStress*` suites exercise retained-render churn. Each generation
+  renders under a retained graph. The suites compare its raster and semantics
+  with a fresh render.

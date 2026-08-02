@@ -1,6 +1,6 @@
 import SwiftTUIViews
 
-/// A vertical column chart for comparing labeled values.
+/// A vertical column chart that compares labeled values.
 public struct ColumnChart<Label: View, Summary: View>: View {
   public var entries: [BarChartEntry]
   public var chartHeight: Int

@@ -102,7 +102,7 @@ func columnChartBody(
   }
 }
 
-/// Maps a 0...1 intensity fraction to the canonical 4-step ramp glyph.
+/// Maps an intensity fraction from 0 through 1 to the canonical 4-step ramp glyph.
 /// Returns `"░"` for < 0.25, `"▒"` for < 0.5, `"▓"` for < 0.75, `"█"` otherwise.
 func intensityRampGlyph(fraction: Double) -> String {
   switch fraction {

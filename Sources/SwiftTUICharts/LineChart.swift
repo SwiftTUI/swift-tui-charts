@@ -1,8 +1,8 @@
 import Foundation
 import SwiftTUIViews
 
-/// A multi-series continuous plot supporting `.line`, `.area`, and
-/// `.step` series styles, with Date- or numeric-aware axis modifiers.
+/// A multi-series continuous plot that supports `.line`, `.area`, and `.step` series styles.
+/// Its axis modifiers accept dates or numbers.
 public struct LineChart<Label: View, Summary: View>: View {
   public var series: [LineChartSeries]
   public var height: Int

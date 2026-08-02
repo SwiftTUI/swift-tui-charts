@@ -1,6 +1,6 @@
 import SwiftTUIViews
 
-/// A horizontal bar chart for comparing labeled values.
+/// A horizontal bar chart that compares labeled values.
 public struct BarChart<Label: View, Summary: View>: View {
   public var entries: [BarChartEntry]
   public var barWidth: Int

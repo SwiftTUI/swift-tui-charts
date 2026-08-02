@@ -10,9 +10,9 @@
 `swift-tui-charts` is the chart library for
 [SwiftTUI](https://swifttui.sh) — SwiftUI semantics, drawn in terminal cells.
 Every chart is an ordinary SwiftTUI `View` composed from the public
-`SwiftTUIViews` authoring surface: drop one in a `VStack` next to your text
-and controls, feed it plain Swift values, and it renders across every
-SwiftTUI host and terminal capability profile.
+`SwiftTUIViews` authoring surface. Put one in a `VStack` next to your text and
+controls. Give it plain Swift values. It renders across every SwiftTUI host and
+terminal capability profile.
 
 ```swift
 import SwiftTUI
@@ -36,7 +36,7 @@ struct Dashboard: View {
 ## Installation
 
 Add both packages to your `Package.swift` — the framework and the charts —
-and depend on the `SwiftTUICharts` product from `swift-tui-charts`:
+Then add the `SwiftTUICharts` product from `swift-tui-charts`:
 
 ```swift
 dependencies: [
@@ -56,10 +56,9 @@ targets: [
 
 > **Migrating from the in-framework `SwiftTUICharts`:** the module used to ship as a
 > product of the `swift-tui` package (releases before the repository split).
-> It now lives here. Keep your
-> `import SwiftTUICharts` lines as they are, add the `swift-tui-charts`
-> package dependency, and change the product declaration's `package:` from
-> `"swift-tui"` to `"swift-tui-charts"`.
+> It now lives here. Keep each `import SwiftTUICharts` statement unchanged.
+> Add the `swift-tui-charts` package dependency. Change the product
+> declaration's `package:` value from `"swift-tui"` to `"swift-tui-charts"`.
 
 ## Chart families
 

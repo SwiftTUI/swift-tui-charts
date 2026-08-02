@@ -1,6 +1,6 @@
 import SwiftTUIViews
 
-/// A compact meter for displaying a single fractional value.
+/// A compact meter that shows one fractional value.
 public struct Meter<Label: View, CurrentValueLabel: View>: View {
   public var tone: BannerTone
   public var value: Double

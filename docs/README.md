@@ -1,8 +1,8 @@
 # swift-tui-charts internal docs
 
-Internal project documentation for contributors. Everything here describes
-the state of `HEAD` only; planning and proposal documents live in the
-SwiftTUI org coordination root.
+This directory contains internal project documentation for contributors.
+Each document describes the state of `HEAD`. Planning and proposal documents
+live in the SwiftTUI org coordination root.
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — how the chart library is built and
   its boundary with the framework.

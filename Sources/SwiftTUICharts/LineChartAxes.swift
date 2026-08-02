@@ -5,31 +5,30 @@ public enum DateAxisStride: Hashable, Sendable {
   case day, week, month, quarter, year
 }
 
-/// Where `.area` and `.step` rasters anchor along Y.
+/// The Y-axis anchor for `.area` and `.step` rasters.
 public enum LineChartBaseline: Hashable, Sendable {
-  /// Areas / step fills anchor at 0; clipped by the plot if 0 falls
-  /// outside the visible Y range.
+  /// Area and step fills use 0 as the anchor.
+  /// If 0 is outside the visible Y range, the plot clips the fill.
   case zero
-  /// Areas / step fills anchor at `min(Y)` across visible series.
+  /// Area and step fills use `min(Y)` across the visible series as the anchor.
   case auto
 }
 
-/// X-axis configuration. Constructed via `.values(...)`, `.dates(...)`,
-/// `.automatic`, or `.hidden`, then applied to a `LineChart` via
-/// `.chartXAxis(_:)`.
+/// The X-axis configuration.
+/// Use `.values(...)`, `.dates(...)`, `.automatic`, or `.hidden` to create this value.
+/// Then use `.chartXAxis(_:)` to apply it to a `LineChart`.
 public struct LineChartXAxis: Hashable, Sendable {
   public enum Ticks: Hashable, Sendable {
-    /// ~5 evenly spaced ticks chosen by the renderer.
+    /// The renderer selects ~5 evenly spaced ticks.
     case automatic
-    /// Exactly `N` evenly spaced ticks across the plot.
+    /// The renderer selects exactly `N` evenly spaced ticks across the plot.
     case count(Int)
-    /// Approximately one tick per `stride` of domain. The number of ticks
-    /// is derived from `span / stride`, but the ticks are then spaced
-    /// evenly across the plot — they are not positioned at exact multiples
-    /// of `stride`. Use `.dates(every:)` for calendar-boundary snapping.
+    /// The renderer selects approximately one tick for each `stride` of the domain.
+    /// The renderer calculates the number of ticks from `span / stride`.
+    /// Then it spaces the ticks evenly across the plot, not at exact multiples of `stride`.
+    /// Use `.dates(every:)` to align ticks with calendar boundaries.
     case every(stride: Double)
-    /// Snaps ticks to calendar boundaries of the given stride
-    /// (e.g., month starts).
+    /// Aligns ticks with calendar boundaries of the specified stride, such as month starts.
     case dates(every: DateAxisStride)
   }
 
@@ -70,18 +69,17 @@ public struct LineChartXAxis: Hashable, Sendable {
   }
 }
 
-/// Y-axis configuration. Same shape as `LineChartXAxis` without the
-/// `.dates` tick / format variants.
+/// The Y-axis configuration.
+/// It has the same structure as `LineChartXAxis`, but it has no `.dates` tick or format variants.
 public struct LineChartYAxis: Hashable, Sendable {
   public enum Ticks: Hashable, Sendable {
-    /// ~5 evenly spaced ticks chosen by the renderer.
+    /// The renderer selects ~5 evenly spaced ticks.
     case automatic
-    /// Exactly `N` evenly spaced ticks across the plot.
+    /// The renderer selects exactly `N` evenly spaced ticks across the plot.
     case count(Int)
-    /// Approximately one tick per `stride` of domain. The number of ticks
-    /// is derived from `span / stride`, but the ticks are then spaced
-    /// evenly across the plot — they are not positioned at exact multiples
-    /// of `stride`.
+    /// The renderer selects approximately one tick for each `stride` of the domain.
+    /// The renderer calculates the number of ticks from `span / stride`.
+    /// Then it spaces the ticks evenly across the plot, not at exact multiples of `stride`.
     case every(stride: Double)
   }
 

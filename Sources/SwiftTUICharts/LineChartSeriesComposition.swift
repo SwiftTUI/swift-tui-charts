@@ -1,15 +1,15 @@
 struct ComposedSeriesGrid: Equatable, Sendable {
-  /// Rasterized cells across all series, with later series overwriting
-  /// earlier ones (after area fills are painted first).
+  /// The rasterized cells across all series.
+  /// Later series replace earlier series after the renderer paints the area fills.
   var grid: [[LineRasterCell?]]
-  /// Index into `series` for the series that owns each filled cell; the
-  /// view layer uses this to pick the tone.
+  /// The index in `series` for the series that owns each filled cell.
+  /// The view layer uses this index to select the tone.
   var seriesIndex: [[Int?]]
 }
 
-/// Composites every series in z-order: areas first across all `.area`
-/// series, then lines and steps (and the area's own line) on top in
-/// declaration order. Later series win when cells collide.
+/// Composites all series in z-order. It first draws the areas for all `.area` series.
+/// Then it draws lines and steps in declaration order, including the lines for areas.
+/// If cells collide, the later series replaces the earlier series.
 func composeSeriesGrids(
   series: [LineChartSeries],
   domain: LineChartDomain,

@@ -1,12 +1,12 @@
 /// One rasterized cell in a line chart plot grid.
 struct LineRasterCell: Equatable, Sendable {
-  /// `•` for isolated points, `│`/`─`/`╭`/`╮`/`╰`/`╯` for connector
-  /// segments. Picked by `dataPointGlyph(...)` / `elbowGlyph(...)`.
+  /// Uses `•` for isolated points and `│`/`─`/`╭`/`╮`/`╰`/`╯` for connector segments.
+  /// `dataPointGlyph(...)` and `elbowGlyph(...)` select the glyph.
   var glyph: Character
 }
 
-/// Maps a series of `(x, y)` points (already sorted by x) into a
-/// `plotHeight × plotWidth` grid. `nil` cells stay empty.
+/// Maps a series of `(x, y)` points into a `plotHeight × plotWidth` grid.
+/// The points must already be in x order. Cells with `nil` stay empty.
 func rasterizeLine(
   points: [LineChartPoint],
   domain: LineChartDomain,
@@ -143,8 +143,9 @@ private func dataPointGlyph(
   }
 }
 
-/// Renders `.area` style: fills every cell between the line and
-/// `baselineRow` with `▒`, then the line itself on top.
+/// Renders the `.area` style.
+/// It fills every cell between the line and `baselineRow` with `▒`.
+/// Then it draws the line on top.
 func rasterizeArea(
   points: [LineChartPoint],
   domain: LineChartDomain,
@@ -180,9 +181,10 @@ func rasterizeArea(
   return grid
 }
 
-/// Renders `.step` style: a horizontal segment at each sample's Y for
-/// the full width up to (but not including) the next sample's column,
-/// then a vertical jump in that column to the new Y.
+/// Renders the `.step` style.
+/// It draws a horizontal segment from each sample to the next sample column.
+/// It does not include the next sample column in this segment.
+/// Then it draws a vertical segment to the new Y value in that column.
 func rasterizeStep(
   points: [LineChartPoint],
   domain: LineChartDomain,
