@@ -15,8 +15,8 @@ It includes:
 - sparklines and timelines
 - legends and support models
 
-The module is separate from the core roadmap. Thus, chart requirements do not
-change the main authoring and runtime surfaces.
+The package composes on the public `SwiftTUIViews` authoring surface, so it
+versions and upgrades independently of your app's runtime integration.
 
 ## Topics
 

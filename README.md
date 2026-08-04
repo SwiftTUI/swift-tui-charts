@@ -82,20 +82,31 @@ description even when the visual is glyph art), participates in terminal
 capability degradation (`true-color` down to `preview-ascii`), and renders
 identically across the terminal, web, SwiftUI, and Android hosts.
 
-## Documentation
+## Documentation & support
 
 - API reference: <https://swifttui.sh/docs/charts/documentation/swifttuicharts/>
-- Building dashboards guide: in the DocC catalog (`Building-Dashboards`)
+- [Building dashboards guide](https://swifttui.sh/docs/charts/documentation/swifttuicharts/building-dashboards)
+- Framework API reference: <https://swifttui.sh/docs/documentation/>
+- Website & showcase: <https://swifttui.sh>
+- Issues: <https://github.com/SwiftTUI/swift-tui-charts/issues>
+
+**Other hosts and siblings:** the framework lives in
+[`swift-tui`](https://github.com/SwiftTUI/swift-tui); examples in
+[`swift-tui-examples`](https://github.com/SwiftTUI/swift-tui-examples)
+(`git-viz` drives every chart primitive); the SwiftUI, browser, and Android
+hosts in
+[`swift-tui-swiftui`](https://github.com/SwiftTUI/swift-tui-swiftui),
+[`swift-tui-web`](https://github.com/SwiftTUI/swift-tui-web), and
+[`swift-tui-android`](https://github.com/SwiftTUI/swift-tui-android).
 
 ## Development
 
 ```bash
 swiftly run swift build        # build
 swiftly run swift test         # full test suite (fixtures included)
-tools/bazel/native_gate.sh     # the repo gate CI runs
 ```
 
-See [AGENTS.md](AGENTS.md) for repository conventions and
+See [AGENTS.md](AGENTS.md) for repository conventions and the repo gate, and
 [docs/](docs/README.md) for architecture notes.
 
 ## License

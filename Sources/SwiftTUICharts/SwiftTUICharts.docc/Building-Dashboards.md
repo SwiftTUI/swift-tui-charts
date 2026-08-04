@@ -40,7 +40,7 @@ Then the same view works with cell-only pointer fallback.
 
 ### Calendar heatmap
 
-For daily activity over a long period, use `CalendarHeatmap`. For example, it
+For daily activity over a long period, use ``CalendarHeatmap``. For example, it
 can show commits or requests per day. Pass a flat array of `DateValue`. The
 chart groups the values into a weekday-by-week grid.
 
@@ -54,7 +54,7 @@ CalendarHeatmap(
 
 ### Multi-series line chart
 
-For continuous numeric or time-series data, use `LineChart`. It can show one
+For continuous numeric or time-series data, use ``LineChart``. It can show one
 or more series. A series can be `.line`, `.area`, or `.step`. The X-axis can
 use numbers or dates through `.chartXAxis(.dates(...))`.
 

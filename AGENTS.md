@@ -49,7 +49,8 @@ runs match the pinned toolchain in `.swift-version`.
   discuss the framework boundary. Do not add a local workaround.
 - Use the code style in `.swift-format.json`: 2-space indentation, 100
   columns, ordered imports, and `private` instead of `fileprivate`.
-- Do not store `AnyView` without an `AnyView policy:` comment.
+- Do not store `AnyView` without an `AnyView policy:` comment (policy in
+  [docs/PUBLIC-API.md](docs/PUBLIC-API.md)).
 - Use Swift 6.3 language mode, strict memory safety, and the same upcoming
   features as `swift-tui` (see `Package.swift`).
 - Use Swift Testing (`import Testing`, `@Test`, `#expect`) for tests.

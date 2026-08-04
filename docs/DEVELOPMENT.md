@@ -32,10 +32,9 @@ directory carries exactly the supported profile set.
 
 ## Public API baseline
 
-`docs/.public-api-baseline.txt` enumerates the public surface. The native
-gate fails on drift. For an intentional API change, regenerate the baseline
-with `Scripts/generate_public_api_baseline.sh`. Commit the baseline diff with
-the API change.
+The baseline process and policy live in [PUBLIC-API.md](PUBLIC-API.md).
+Regenerate with `Scripts/generate_public_api_baseline.sh` and commit the
+baseline diff with the API change.
 
 ## Releases
 
