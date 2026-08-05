@@ -14,6 +14,16 @@ Every chart is an ordinary SwiftTUI `View` composed from the public
 controls. Give it plain Swift values. It renders across every SwiftTUI host and
 terminal capability profile.
 
+**Relation to Swift Charts.** This library is *not* a port of Apple's
+[Swift Charts](https://developer.apple.com/documentation/charts). Swift Charts
+builds every chart from one composable `Chart` grammar — mark types
+(`BarMark`, `LineMark`, …) plus data-driven modifiers. Terminal cells are too
+coarse for that grammar to survive honestly, so SwiftTUICharts ships typed
+chart *views* instead: `BarChart`, `LineChart`, `Meter`, `Sparkline`, and
+friends, each a purpose-built view with its own initializer. If you know
+Swift Charts, expect the same "declare data, get a chart" feel — but per
+chart type, not through a shared mark grammar.
+
 ```swift
 import SwiftTUI
 import SwiftTUICharts
