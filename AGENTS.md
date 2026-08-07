@@ -19,7 +19,7 @@ SwiftTUI org coordination overlay can rewrite it to a local path.
 swiftly run swift build                            # Build
 swiftly run swift test                             # Full test suite
 swiftly run swift test --filter LineChartRasterTests   # One suite
-tools/bazel/native_gate.sh                         # Repo gate (tests + API baseline)
+Scripts/native_gate.sh                         # Repo gate (tests + API baseline)
 Scripts/check_public_api_baseline.sh               # Public API drift check
 Scripts/generate_public_api_baseline.sh            # Regenerate after reviewed API changes
 swift format format -i --recursive --configuration .swift-format.json Sources/ Tests/

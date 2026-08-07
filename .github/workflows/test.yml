@@ -4,7 +4,7 @@ name: Test
 # from a fresh clone with native tools only, resolving swift-tui through its
 # public tagged HTTPS dependency, and its test suite and public API baseline
 # pass. This runs the same command as the org root's
-# @swift_tui_charts//:native_gate (swiftly-managed `swift test` + API check),
+# //:swift_tui_charts_native_gate (swiftly-managed `swift test` + API check),
 # so a red here means the org gate would be red too.
 #
 # The weekly run guards the no-push failure modes: a re-pointed upstream
@@ -80,7 +80,7 @@ jobs:
 
       - name: Run native gate
         shell: bash
-        run: tools/bazel/native_gate.sh
+        run: Scripts/native_gate.sh
 
   linux:
     name: SwiftTUICharts tests (Linux)
@@ -147,7 +147,7 @@ jobs:
         run: |
           set -euo pipefail
           . "${SWIFTLY_HOME_DIR}/env.sh"
-          tools/bazel/native_gate.sh
+          Scripts/native_gate.sh
 
       - name: Release build
         shell: bash

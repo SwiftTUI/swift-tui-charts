@@ -7,9 +7,9 @@ Always build and run tests through `swiftly run swift ...`.
 
 ## Gates
 
-- `tools/bazel/native_gate.sh` — runs `swift test` and the public API baseline
+- `Scripts/native_gate.sh` — runs `swift test` and the public API baseline
   check. The repository CI runs this gate. The SwiftTUI org root runs it as
-  `@swift_tui_charts//:native_gate`.
+  `//:swift_tui_charts_native_gate`.
 - `.github/workflows/test.yml` — fresh-clone verification on macOS and
   Linux, a Linux release build, and a `wasm32-wasi` cross-compile of the
   `SwiftTUICharts` target.
