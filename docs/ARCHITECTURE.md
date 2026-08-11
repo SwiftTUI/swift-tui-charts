@@ -6,7 +6,7 @@ on the public `SwiftTUIViews` authoring surface of
 
 ## The boundary
 
-- Every chart is an ordinary `View` with a compositional `body` — `VStack`,
+- Every chart is an ordinary `View` with a compositional `body`: `VStack`,
   `HStack`, `Text`, `ForEach`, `Spacer`, and public style/metadata modifiers.
 - The package names **no** framework-internal API. There is no
   `PrimitiveView`/`ResolvableView` conformance, no `ResolveContext`, and no
@@ -25,14 +25,14 @@ on the public `SwiftTUIViews` authoring surface of
 
 One file per chart family (`BarChart.swift`, `LineChart.swift`, …) plus:
 
-- `ChartModels.swift` — the shared entry/value model types.
-- `ChartChromeSupport.swift` — `BannerTone` and tone→style mapping.
-- `ChartCommonSupport.swift` — the shared header, accessibility metadata,
+- `ChartModels.swift`: the shared entry/value model types.
+- `ChartChromeSupport.swift`: `BannerTone` and tone→style mapping.
+- `ChartCommonSupport.swift`: the shared header, accessibility metadata,
   and the timeline/legend row renderers.
-- `ChartMetricFormatting.swift` — chart-local metric/track formatting,
-  mirroring the framework's built-in metric controls for output parity.
-- `*Support.swift` — per-family layout math, kept pure and unit-testable.
-- `LineChart*.swift` — domain, axes, tick, rasterization, and composition
+- `ChartMetricFormatting.swift`: chart-local metric/track formatting that
+  mirrors the framework's built-in metric controls for output parity.
+- `*Support.swift`: per-family layout math, kept pure and unit-testable.
+- `LineChart*.swift`: domain, axes, tick, rasterization, and composition
   support for the line-chart family.
 
 ## Accessibility

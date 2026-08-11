@@ -1,6 +1,6 @@
 # SwiftTUICharts
 
-**Compact charts for terminal UIs — bar, column, line, and stacked-bar charts, meters, gauges, sparklines, heatmaps, and timelines, all ordinary SwiftTUI views.**
+**Compact charts for terminal UIs: bar, column, line, and stacked-bar charts, meters, gauges, sparklines, heatmaps, and timelines, all ordinary SwiftTUI views.**
 
 ![Swift 6.3](https://img.shields.io/badge/Swift-6.3-F05138?logo=swift&logoColor=white)
 ![Platforms](https://img.shields.io/badge/platforms-macOS%2015%2B%20%C2%B7%20Linux%20%C2%B7%20WASI-1E90FF)
@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/badge/license-MIT-3DA639)
 
 `swift-tui-charts` is the chart library for
-[SwiftTUI](https://swifttui.sh) — SwiftUI semantics, drawn in terminal cells.
+[SwiftTUI](https://swifttui.sh): SwiftUI semantics, drawn in terminal cells.
 Every chart is an ordinary SwiftTUI `View` composed from the public
 `SwiftTUIViews` authoring surface. Put one in a `VStack` next to your text and
 controls. Give it plain Swift values. It renders across every SwiftTUI host and
@@ -16,12 +16,12 @@ terminal capability profile.
 
 **Relation to Swift Charts.** This library is *not* a port of Apple's
 [Swift Charts](https://developer.apple.com/documentation/charts). Swift Charts
-builds every chart from one composable `Chart` grammar — mark types
+builds every chart from one composable `Chart` grammar: mark types
 (`BarMark`, `LineMark`, …) plus data-driven modifiers. Terminal cells are too
 coarse for that grammar to survive honestly, so SwiftTUICharts ships typed
 chart *views* instead: `BarChart`, `LineChart`, `Meter`, `Sparkline`, and
 friends, each a purpose-built view with its own initializer. If you know
-Swift Charts, expect the same "declare data, get a chart" feel — but per
+Swift Charts, expect the same "declare data, get a chart" feel, but per
 chart type, not through a shared mark grammar.
 
 ```swift
@@ -45,7 +45,7 @@ struct Dashboard: View {
 
 ## Installation
 
-Add both packages to your `Package.swift` — the framework and the charts —
+Add both packages to your `Package.swift`: the framework and the charts.
 Then add the `SwiftTUICharts` product from `swift-tui-charts`:
 
 ```swift
@@ -121,4 +121,4 @@ See [AGENTS.md](AGENTS.md) for repository conventions and the repo gate, and
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT; see [LICENSE](LICENSE).
