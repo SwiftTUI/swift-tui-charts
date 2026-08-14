@@ -26,7 +26,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SWIFTLY_VERSION: "1.1.1"
+  SWIFTLY_VERSION: "1.1.3"
 
 jobs:
   macos:
@@ -35,10 +35,10 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Cache Swiftly toolchain
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           # ~/.swiftly holds swiftly's registry, but macOS toolchains install
           # to ~/Library/Developer/Toolchains — caching only the registry
@@ -69,7 +69,7 @@ jobs:
           echo "SWIFTLY_HOME_DIR=$HOME/.swiftly" >> "$GITHUB_ENV"
 
       - name: Cache SwiftPM
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/Library/Caches/org.swift.swiftpm
@@ -88,7 +88,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Linux Swift dependencies
         shell: bash
@@ -98,7 +98,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends libcurl4-openssl-dev
 
       - name: Cache Swiftly toolchain
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.local/share/swiftly
@@ -135,7 +135,7 @@ jobs:
           echo "SWIFTLY_HOME_DIR=$SWIFTLY_HOME_DIR" >> "$GITHUB_ENV"
 
       - name: Cache SwiftPM
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/org.swift.swiftpm
           key: ${{ runner.os }}-swiftpm-${{ hashFiles('Package.resolved') }}
@@ -162,7 +162,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # The toolchain version tracks the pinned .swift-version. The value is
       # validated against a strict pattern before any downstream use so
@@ -189,7 +189,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends libcurl4-openssl-dev
 
       - name: Cache Swiftly toolchain
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.local/share/swiftly
