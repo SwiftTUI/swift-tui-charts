@@ -4,4 +4,4 @@ surface 30x2
 capability glyph=ascii color=none styles=false
 appearance fg=#ECEFF4 bg=#1E222A tint=#56B6C2 contrast=increased source=fallback
 01│Series
-02│?·live·?·preset·?·delta
+02│#·live·#·preset·#·delta
