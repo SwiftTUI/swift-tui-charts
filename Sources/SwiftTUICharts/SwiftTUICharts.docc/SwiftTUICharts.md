@@ -20,6 +20,11 @@ versions and upgrades independently of your app's runtime integration.
 
 ## Topics
 
+### Guides
+
+- <doc:Getting-Started>
+- <doc:Building-Dashboards>
+
 ### Metric Views
 
 - ``Meter``
