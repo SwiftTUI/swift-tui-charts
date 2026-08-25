@@ -7,13 +7,24 @@ name: Test
 # //:swift_tui_charts_native_gate (swiftly-managed `swift test` + API check),
 # so a red here means the org gate would be red too.
 #
-# The weekly run guards the no-push failure modes: a re-pointed upstream
-# release tag or a runner-image/toolchain change breaking resolution.
+# Lane shape (swift-tui-org plan 2026-08-25-001 Stage 4):
+#   * push / pull_request  — Linux `swift test` + API baseline, and the
+#                            wasm32-wasi cross-compile. This is the hot path.
+#   * tag push (`*.*.*`)   — the above plus a release-configuration build on
+#                            Linux and the macOS suite; a release needs all of
+#                            them green.
+#   * nightly schedule     — the macOS suite, guarded by lane-verdict-probe so
+#                            it exits in under a minute when nothing has
+#                            landed since its last green run.
+#   * workflow_dispatch    — everything, on demand.
 
 on:
   pull_request:
   push:
     branches: [main]
+    tags: ["*.*.*"]
+  schedule:
+    - cron: "41 3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -27,61 +38,9 @@ env:
   SWIFTLY_VERSION: "1.1.3"
 
 jobs:
-  macos:
-    name: SwiftTUICharts tests (macOS)
-    runs-on: macos-26
-    timeout-minutes: 45
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Cache Swiftly toolchain
-        uses: actions/cache@v6
-        with:
-          # ~/.swiftly holds swiftly's registry, but macOS toolchains install
-          # to ~/Library/Developer/Toolchains — caching only the registry
-          # makes every cache-hit run fail with "already installed" while the
-          # toolchain directory is absent. Cache both, keyed together.
-          path: |
-            ~/.swiftly
-            ~/Library/Developer/Toolchains
-          key: ${{ runner.os }}-swiftly-toolchain-${{ hashFiles('.swift-version') }}
-          restore-keys: |
-            ${{ runner.os }}-swiftly-toolchain-
-
-      - name: Install swiftly and Swift toolchain
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ ! -f "$HOME/.swiftly/env.sh" ]; then
-            curl -O https://download.swift.org/swiftly/darwin/swiftly.pkg
-            installer -pkg swiftly.pkg -target CurrentUserHomeDirectory
-            "$HOME/.swiftly/bin/swiftly" init --skip-install --quiet-shell-followup --assume-yes
-          fi
-          . "$HOME/.swiftly/env.sh"
-          hash -r
-          swift_version="$(tr -d '[:space:]' < .swift-version)"
-          swiftly install --use --assume-yes "$swift_version"
-          swiftly run swift --version
-          echo "$HOME/.swiftly/bin" >> "$GITHUB_PATH"
-          echo "SWIFTLY_HOME_DIR=$HOME/.swiftly" >> "$GITHUB_ENV"
-
-      - name: Cache SwiftPM
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/Library/Caches/org.swift.swiftpm
-            ~/.swiftpm
-          key: ${{ runner.os }}-swiftpm-${{ hashFiles('Package.resolved') }}
-          restore-keys: |
-            ${{ runner.os }}-swiftpm-
-
-      - name: Run native gate
-        shell: bash
-        run: Scripts/native_gate.sh
-
   linux:
     name: SwiftTUICharts tests (Linux)
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -147,7 +106,12 @@ jobs:
           . "${SWIFTLY_HOME_DIR}/env.sh"
           Scripts/native_gate.sh
 
+      # Release-configuration coverage belongs to the tag lane (and to an
+      # explicit dispatch), not to every push: on the hot path it was a
+      # 3.7-minute duplicate compile of a package the debug build had just
+      # verified.
       - name: Release build
+        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
         shell: bash
         run: |
           set -euo pipefail
@@ -156,6 +120,7 @@ jobs:
 
   wasi-cross-compile:
     name: wasm32-wasi cross-compile
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -259,3 +224,101 @@ jobs:
           swiftly run swift build \
             --swift-sdk "swift-${SWIFT_VERSION}-RELEASE_wasm" \
             --target SwiftTUICharts
+
+  # Skip-if-unchanged guard for the macOS lane (plan 2026-08-25-001 §6): on a
+  # schedule, a green verdict already recorded for this exact commit means the
+  # whole lane exits here in under a minute. Dispatch and tag pushes always
+  # run; branch pushes and PRs never reach this job.
+  changes:
+    name: Skip macOS lane if unchanged
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      changed: ${{ steps.probe.outputs.changed }}
+      key: ${{ steps.probe.outputs.key }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Probe the lane verdict
+        id: probe
+        uses: ./.github/actions/lane-verdict-probe
+        with:
+          lane: charts-macos
+
+  macos:
+    name: SwiftTUICharts tests (macOS)
+    # Off the push path (plan 2026-08-25-001 Stage 4): the Linux job carries
+    # the per-push signal for this platform-portable package; macOS runs
+    # nightly-if-changed, at every tag (required for a release), and on demand.
+    needs: changes
+    if: needs.changes.outputs.changed == 'true'
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Cache Swiftly toolchain
+        uses: actions/cache@v6
+        with:
+          # ~/.swiftly holds swiftly's registry, but macOS toolchains install
+          # to ~/Library/Developer/Toolchains — caching only the registry
+          # makes every cache-hit run fail with "already installed" while the
+          # toolchain directory is absent. Cache both, keyed together.
+          path: |
+            ~/.swiftly
+            ~/Library/Developer/Toolchains
+          key: ${{ runner.os }}-swiftly-toolchain-${{ hashFiles('.swift-version') }}
+          restore-keys: |
+            ${{ runner.os }}-swiftly-toolchain-
+
+      - name: Install swiftly and Swift toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f "$HOME/.swiftly/env.sh" ]; then
+            curl -O https://download.swift.org/swiftly/darwin/swiftly.pkg
+            installer -pkg swiftly.pkg -target CurrentUserHomeDirectory
+            "$HOME/.swiftly/bin/swiftly" init --skip-install --quiet-shell-followup --assume-yes
+          fi
+          . "$HOME/.swiftly/env.sh"
+          hash -r
+          swift_version="$(tr -d '[:space:]' < .swift-version)"
+          swiftly install --use --assume-yes "$swift_version"
+          swiftly run swift --version
+          echo "$HOME/.swiftly/bin" >> "$GITHUB_PATH"
+          echo "SWIFTLY_HOME_DIR=$HOME/.swiftly" >> "$GITHUB_ENV"
+
+      - name: Cache SwiftPM
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            ~/.swiftpm
+          key: ${{ runner.os }}-swiftpm-${{ hashFiles('Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-swiftpm-
+
+      - name: Run native gate
+        shell: bash
+        run: Scripts/native_gate.sh
+
+  record-macos-verdict:
+    name: Record macOS lane verdict
+    needs: [changes, macos]
+    if: needs.changes.outputs.changed == 'true' && needs.macos.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Record the green verdict
+        uses: ./.github/actions/lane-verdict-record
+        with:
+          key: ${{ needs.changes.outputs.key }}

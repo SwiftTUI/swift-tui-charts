@@ -10,9 +10,12 @@ Always build and run tests through `swiftly run swift ...`.
 - `Scripts/native_gate.sh`: runs `swift test` and the public API baseline
   check. The repository CI runs this gate. The SwiftTUI org root runs it as
   `//:swift_tui_charts_native_gate`.
-- `.github/workflows/test.yml`: fresh-clone verification on macOS and
-  Linux, a Linux release build, and a `wasm32-wasi` cross-compile of the
-  `SwiftTUICharts` target.
+- `.github/workflows/test.yml`: fresh-clone verification. Every push and
+  pull request runs the Linux gate and a `wasm32-wasi` cross-compile of the
+  `SwiftTUICharts` target. The macOS gate runs nightly (skipping itself when
+  nothing has landed since its last green run), on every release tag, and
+  on `workflow_dispatch`; the Linux release-configuration build runs on tags
+  and dispatch only.
 
 ## Rendered-text fixtures
 
