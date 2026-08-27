@@ -234,7 +234,11 @@ jobs:
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/'))
+      github.event_name == 'push'
+    # Re-enabled on pushes to main (2026-08-27, operator request). The
+    # lane-verdict probe above still skips the run in under a minute when
+    # none of its inputs moved, so this costs a macOS runner only when there
+    # is something new to verify.
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
