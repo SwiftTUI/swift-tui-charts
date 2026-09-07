@@ -29,10 +29,8 @@ func chartFraction(
   }
 
   let minimum = Double(axisOrigin)
-  let maximum = Double(axisOrigin + axisLength - 1)
   let finiteCoordinate = coordinate.isFinite ? coordinate : minimum
-  let clampedCoordinate = min(max(finiteCoordinate, minimum), maximum)
-  let fraction = (clampedCoordinate - minimum) / (maximum - minimum)
+  let fraction = min(max((finiteCoordinate - minimum) / Double(axisLength - 1), 0), 1)
 
   switch axis {
   case .horizontal:
@@ -49,7 +47,5 @@ func chartDomainValue(
   axis: ChartCoordinateAxis
 ) -> Double {
   let fraction = chartFraction(at: location, in: plotRect, axis: axis)
-  let lower = min(domain.lowerBound, domain.upperBound)
-  let upper = max(domain.lowerBound, domain.upperBound)
-  return lower + fraction * (upper - lower)
+  return chartInterpolatedValue(fraction, in: domain)
 }

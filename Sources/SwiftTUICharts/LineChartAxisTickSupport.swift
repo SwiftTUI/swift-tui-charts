@@ -33,7 +33,7 @@ func xAxisTickLabels(
   case .count(let n):
     return evenlySpacedXTicks(count: max(2, n), domain: domain, plotWidth: width, format: format)
   case .every(let stride):
-    let count = max(2, Int(span / max(stride, .leastNonzeroMagnitude)))
+    let count = boundedStrideTickCount(span: span, stride: stride, cells: width)
     return evenlySpacedXTicks(count: count, domain: domain, plotWidth: width, format: format)
   case .dates(let stride):
     return dateStrideXTicks(
@@ -58,12 +58,12 @@ private func evenlySpacedXTicks(
   plotWidth: Int,
   format: LineChartXAxis.Format
 ) -> [AxisTickLabel] {
-  let span = domain.upperBound - domain.lowerBound
+  let count = min(max(2, count), max(2, plotWidth))
   var out: [AxisTickLabel] = []
   for i in 0..<count {
     let fraction = Double(i) / Double(count - 1)
-    let value = domain.lowerBound + fraction * span
-    let col = Int((fraction * Double(plotWidth - 1)).rounded())
+    let value = chartInterpolatedValue(fraction, in: domain)
+    let col = chartCellOffset(fraction, maximum: plotWidth - 1)
     out.append(AxisTickLabel(col: col, text: formatX(value: value, using: format)))
   }
   return out
@@ -76,9 +76,7 @@ private func dateStrideXTicks(
   format: LineChartXAxis.Format,
   calendar: Calendar
 ) -> [AxisTickLabel] {
-  let startDate = Date(timeIntervalSinceReferenceDate: domain.lowerBound)
   let endDate = Date(timeIntervalSinceReferenceDate: domain.upperBound)
-  let span = domain.upperBound - domain.lowerBound
 
   let component: Calendar.Component
   switch stride {
@@ -89,16 +87,21 @@ private func dateStrideXTicks(
   case .year: component = .year
   }
 
-  var current = nextStrideBoundary(after: startDate, component: component, calendar: calendar)
   var out: [AxisTickLabel] = []
   let tzPinnedFormat = pinTimezone(calendar.timeZone, to: format)
-  while current <= endDate {
+  var previous: Date?
+  // Sample the full domain at the available resolution, then align forward
+  // to calendar boundaries. Dense strides are thinned without iterating every
+  // underlying day/month or truncating coverage to the start of the chart.
+  for column in 0..<max(1, plotWidth) {
+    let fraction = Double(column) / Double(max(1, plotWidth - 1))
+    let sample = Date(timeIntervalSinceReferenceDate: chartInterpolatedValue(fraction, in: domain))
+    let current = nextStrideBoundary(after: sample, component: component, calendar: calendar)
+    guard current <= endDate, current != previous else { continue }
     let value = current.timeIntervalSinceReferenceDate
-    let fraction = (value - domain.lowerBound) / span
-    let col = Int((fraction * Double(plotWidth - 1)).rounded())
+    let col = xCell(value: value, domain: domain, plotWidth: plotWidth)
     out.append(AxisTickLabel(col: col, text: formatX(value: value, using: tzPinnedFormat)))
-    guard let next = calendar.date(byAdding: component, value: 1, to: current) else { break }
-    current = next
+    previous = current
   }
   return out
 }
@@ -165,11 +168,11 @@ func yAxisTickLabels(
   let count: Int
   switch ticks {
   case .automatic:
-    count = 5
+    count = min(5, max(2, height))
   case .count(let n):
-    count = max(2, n)
+    count = min(max(2, n), max(2, height))
   case .every(let stride):
-    count = max(2, Int(span / max(stride, .leastNonzeroMagnitude)))
+    count = boundedStrideTickCount(span: span, stride: stride, cells: height)
   }
 
   guard span > 0 else {
@@ -179,9 +182,17 @@ func yAxisTickLabels(
   var out: [AxisTickLabel] = []
   for i in 0..<count {
     let fraction = Double(i) / Double(count - 1)
-    let value = domain.upperBound - fraction * span
-    let row = Int((fraction * Double(height - 1)).rounded())
+    let value = chartInterpolatedValue(1 - fraction, in: domain)
+    let row = chartCellOffset(fraction, maximum: height - 1)
     out.append(AxisTickLabel(row: row, text: format.format(value)))
   }
   return out
+}
+
+private func boundedStrideTickCount(span: Double, stride: Double, cells: Int) -> Int {
+  let limit = max(2, cells)
+  guard stride.isFinite, stride > 0 else { return min(5, limit) }
+  let requested = span / stride
+  guard requested.isFinite, requested < Double(limit) else { return limit }
+  return max(2, Int(requested))
 }

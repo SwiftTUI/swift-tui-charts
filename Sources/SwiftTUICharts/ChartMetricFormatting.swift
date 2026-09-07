@@ -9,11 +9,14 @@ func progressFraction(
   value: Double,
   total: Double
 ) -> Double {
+  guard value.isFinite, total.isFinite else { return 0 }
   guard total > 0 else {
     return value > 0 ? 1 : 0
   }
 
-  return min(max(value / total, 0), 1)
+  if value <= 0 { return 0 }
+  if value >= total { return 1 }
+  return value / total
 }
 
 func metricValueString(
@@ -25,14 +28,16 @@ func metricValueString(
 
   let rounded = value.rounded()
   if abs(rounded - value) < 0.000_1 {
-    return String(Int(rounded))
+    return Int(exactly: rounded).map(String.init) ?? String(value)
   }
 
   let scaled = (value * 10).rounded() / 10
   let sign = scaled < 0 ? "-" : ""
   let absolute = abs(scaled)
-  let whole = Int(absolute.rounded(.towardZero))
-  let fractional = Int((absolute * 10).rounded()) % 10
+  guard let whole = Int(exactly: absolute.rounded(.towardZero)),
+    let tenths = Int(exactly: (absolute * 10).rounded())
+  else { return String(value) }
+  let fractional = tenths % 10
   return "\(sign)\(whole).\(fractional)"
 }
 
@@ -56,10 +61,7 @@ func metricTrackString(
   barWidth: Int
 ) -> (filled: String, empty: String) {
   let segmentCount = max(1, barWidth)
-  let filledCount = min(
-    segmentCount,
-    max(0, Int((fraction * Double(segmentCount)).rounded()))
-  )
+  let filledCount = chartCellOffset(fraction, maximum: segmentCount)
   let emptyCount = max(0, segmentCount - filledCount)
   return (
     filled: String(repeating: "█", count: filledCount),

@@ -48,14 +48,8 @@ func thresholdGaugeTrackView(
 ) -> some View {
   let segmentCount = max(1, barWidth)
   let effectiveTotal = max(1, total)
-  let markerIndex = min(
-    segmentCount - 1,
-    max(
-      0,
-      Int(
-        (progressFraction(value: value, total: effectiveTotal) * Double(max(1, segmentCount - 1)))
-          .rounded())
-    )
+  let markerIndex = chartCellOffset(
+    progressFraction(value: value, total: effectiveTotal), maximum: segmentCount - 1
   )
 
   HStack(alignment: .center, spacing: 0) {

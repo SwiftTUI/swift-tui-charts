@@ -1,6 +1,7 @@
 public import Foundation
 
 /// A `(x, y)` point in a line chart's continuous coordinate space.
+/// A nonfinite coordinate marks a gap: it contributes neither a domain value nor a connector.
 public struct LineChartPoint: Hashable, Sendable {
   public var x: Double
   public var y: Double
@@ -31,6 +32,7 @@ public enum LineChartSeriesStyle: Hashable, Sendable {
 }
 
 /// A series of `LineChartPoint` values with a label and tone.
+/// Points render in authored order, including descending or duplicate X values.
 public struct LineChartSeries: Hashable, Sendable {
   public var label: String
   public var points: [LineChartPoint]

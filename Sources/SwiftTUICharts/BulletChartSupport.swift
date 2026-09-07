@@ -22,18 +22,11 @@ func bulletChartTrackView(
   accentStyle: AnyShapeStyle
 ) -> some View {
   let segmentCount = max(1, barWidth)
-  let filledCount = min(
-    segmentCount,
-    max(0, Int((progressFraction(value: value, total: total) * Double(segmentCount)).rounded()))
+  let filledCount = chartCellOffset(
+    progressFraction(value: value, total: total), maximum: segmentCount
   )
-  let targetIndex = min(
-    segmentCount - 1,
-    max(
-      0,
-      Int(
-        (progressFraction(value: target, total: total) * Double(max(1, segmentCount - 1))).rounded()
-      )
-    )
+  let targetIndex = chartCellOffset(
+    progressFraction(value: target, total: total), maximum: segmentCount - 1
   )
 
   HStack(alignment: .center, spacing: 0) {

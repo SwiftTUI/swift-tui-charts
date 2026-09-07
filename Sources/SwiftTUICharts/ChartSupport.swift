@@ -48,12 +48,12 @@ func columnChartFilledHeight(
     return 0
   }
 
-  let normalized = min(max(abs(value) / maximumValue, 0), 1)
+  let normalized = progressFraction(value: abs(value), total: maximumValue)
   if normalized == 0 {
     return 0
   }
 
-  return min(chartHeight, max(1, Int((normalized * Double(chartHeight)).rounded(.awayFromZero))))
+  return chartCellOffset(normalized, maximum: chartHeight, rounding: .awayFromZero)
 }
 
 @MainActor
@@ -121,7 +121,7 @@ func heatStripGlyph(
     return " "
   }
 
-  let fraction = min(max(abs(value) / maximumValue, 0), 1)
+  let fraction = progressFraction(value: abs(value), total: maximumValue)
   if fraction == 0 {
     return " "
   }
@@ -174,7 +174,7 @@ func barChartRow(
   labelWidth: Int
 ) -> some View {
   let track = metricTrackString(
-    fraction: maximumValue > 0 ? min(max(abs(entry.value) / maximumValue, 0), 1) : 0,
+    fraction: progressFraction(value: abs(entry.value), total: maximumValue),
     barWidth: barWidth
   )
   let accentStyle =

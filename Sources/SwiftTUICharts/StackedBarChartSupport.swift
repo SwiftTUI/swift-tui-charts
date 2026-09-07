@@ -31,7 +31,11 @@ func stackedBarWidths(
     return []
   }
 
-  let weights = entries.map { max(0, abs($0.value)) }
+  let rawWeights = entries.map { $0.value.isFinite ? abs($0.value) : 0 }
+  guard let scale = rawWeights.max(), scale > 0 else {
+    return Array(repeating: 0, count: entries.count)
+  }
+  let weights = rawWeights.map { $0 / scale }
   let totalWeight = weights.reduce(0, +)
   guard totalWeight > 0 else {
     return Array(repeating: 0, count: entries.count)
@@ -40,30 +44,39 @@ func stackedBarWidths(
   var widths = Array(repeating: 0, count: entries.count)
   var remainders: [(index: Int, value: Double)] = []
   var assigned = 0
+  let denominator = max(total.isFinite ? total / scale : totalWeight, totalWeight)
+  let positiveCount = weights.count { $0 > 0 }
+  let allocatedWidth = max(
+    min(positiveCount, effectiveBarWidth),
+    chartCellOffset(totalWeight / denominator, maximum: effectiveBarWidth)
+  )
 
   for index in entries.indices {
-    let rawWidth = (weights[index] / max(total, totalWeight)) * Double(effectiveBarWidth)
-    let baseWidth = Int(rawWidth.rounded(.down))
+    let fraction = weights[index] / denominator
+    let rawWidth = fraction * Double(effectiveBarWidth)
+    let baseWidth = chartCellOffset(fraction, maximum: effectiveBarWidth, rounding: .down)
     widths[index] = baseWidth
     assigned += baseWidth
-    remainders.append((index, rawWidth - Double(baseWidth)))
+    if weights[index] > 0 {
+      remainders.append((index, rawWidth - Double(baseWidth)))
+    }
   }
 
   for index in entries.indices
-  where weights[index] > 0 && widths[index] == 0 && assigned < effectiveBarWidth {
+  where weights[index] > 0 && widths[index] == 0 && assigned < allocatedWidth {
     widths[index] = 1
     assigned += 1
   }
 
-  if assigned < effectiveBarWidth {
+  if assigned < allocatedWidth {
     for remainder in remainders.sorted(by: { $0.value > $1.value })
-    where assigned < effectiveBarWidth {
+    where assigned < allocatedWidth {
       widths[remainder.index] += 1
       assigned += 1
     }
-  } else if assigned > effectiveBarWidth {
+  } else if assigned > allocatedWidth {
     for remainder in remainders.sorted(by: { $0.value < $1.value })
-    where assigned > effectiveBarWidth {
+    where assigned > allocatedWidth {
       guard widths[remainder.index] > 0 else {
         continue
       }

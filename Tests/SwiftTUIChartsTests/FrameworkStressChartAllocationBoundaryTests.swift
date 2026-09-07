@@ -58,8 +58,10 @@ struct FrameworkStressChartAllocationBoundaryTests {
       barWidth: 8
     )
 
-    #expect(widths == [3, 3])
-    #expect(widths.reduce(0, +) == 6)
+    // The observed sum is half the explicit total, so four of eight cells
+    // remain unassigned. Rounded-down exact shares need no remainder cells.
+    #expect(widths == [2, 2])
+    #expect(widths.reduce(0, +) == 4)
   }
 
   @Test("stress chart allocation 005 undersized total cannot distort proportions")

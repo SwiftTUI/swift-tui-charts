@@ -44,22 +44,11 @@ func comparisonTrackView(
 ) -> some View {
   let segmentCount = max(1, barWidth)
   let effectiveTotal = max(1, total)
-  let currentCount = min(
-    segmentCount,
-    max(
-      0,
-      Int(
-        (progressFraction(value: abs(current), total: effectiveTotal) * Double(segmentCount))
-          .rounded()))
+  let currentCount = chartCellOffset(
+    progressFraction(value: abs(current), total: effectiveTotal), maximum: segmentCount
   )
-  let baselineIndex = min(
-    segmentCount - 1,
-    max(
-      0,
-      Int(
-        (progressFraction(value: abs(baseline), total: effectiveTotal)
-          * Double(max(1, segmentCount - 1))).rounded())
-    )
+  let baselineIndex = chartCellOffset(
+    progressFraction(value: abs(baseline), total: effectiveTotal), maximum: segmentCount - 1
   )
   let accentStyle = metricAccentStyle(for: tone)
 

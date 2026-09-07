@@ -6,7 +6,7 @@ struct LineRasterCell: Equatable, Sendable {
 }
 
 /// Maps a series of `(x, y)` points into a `plotHeight × plotWidth` grid.
-/// The points must already be in x order. Cells with `nil` stay empty.
+/// Points retain authored order; nonfinite points break the line into separate runs.
 func rasterizeLine(
   points: [LineChartPoint],
   domain: LineChartDomain,
@@ -22,7 +22,7 @@ func rasterizeLine(
 
   guard !points.isEmpty else { return grid }
 
-  if points.count == 1 {
+  if points.count == 1, points[0].x.isFinite, points[0].y.isFinite {
     let p = points[0]
     let col = xCell(value: p.x, domain: domain.x, plotWidth: width)
     let row = yCell(value: p.y, domain: domain.y, plotHeight: height)
@@ -30,22 +30,26 @@ func rasterizeLine(
     return grid
   }
 
-  let cells: [(col: Int, row: Int)] = points.map { p in
-    (
+  let cells: [(col: Int, row: Int)?] = points.map { p in
+    guard p.x.isFinite, p.y.isFinite else { return nil }
+    return (
       xCell(value: p.x, domain: domain.x, plotWidth: width),
       yCell(value: p.y, domain: domain.y, plotHeight: height)
     )
   }
 
   for i in 0..<(cells.count - 1) {
-    drawSegment(from: cells[i], to: cells[i + 1], into: &grid)
+    if let from = cells[i], let to = cells[i + 1] {
+      drawSegment(from: from, to: to, into: &grid)
+    }
   }
 
   for i in 0..<cells.count {
+    guard let current = cells[i] else { continue }
     let previous = i > 0 ? cells[i - 1] : nil
     let next = i + 1 < cells.count ? cells[i + 1] : nil
-    grid[cells[i].row][cells[i].col] = LineRasterCell(
-      glyph: dataPointGlyph(current: cells[i], previous: previous, next: next)
+    grid[current.row][current.col] = LineRasterCell(
+      glyph: dataPointGlyph(current: current, previous: previous, next: next)
     )
   }
 
@@ -200,21 +204,23 @@ func rasterizeStep(
 
   guard !points.isEmpty else { return grid }
 
-  let cells: [(col: Int, row: Int)] = points.map { p in
-    (
+  let cells: [(col: Int, row: Int)?] = points.map { p in
+    guard p.x.isFinite, p.y.isFinite else { return nil }
+    return (
       xCell(value: p.x, domain: domain.x, plotWidth: width),
       yCell(value: p.y, domain: domain.y, plotHeight: height)
     )
   }
 
   for i in 0..<cells.count {
-    let here = cells[i]
-    let endCol = (i + 1 < cells.count) ? cells[i + 1].col : width
-    for col in here.col..<min(endCol, width) where grid[here.row][col] == nil {
+    guard let here = cells[i] else { continue }
+    let next = i + 1 < cells.count ? cells[i + 1] : nil
+    let endCol = next?.col ?? (i + 1 == cells.count ? width : here.col + 1)
+    let columns = endCol >= here.col ? here.col..<endCol : (endCol + 1)..<(here.col + 1)
+    for col in columns where grid[here.row][col] == nil {
       grid[here.row][col] = LineRasterCell(glyph: "─")
     }
-    if i + 1 < cells.count, endCol < width {
-      let next = cells[i + 1]
+    if let next {
       let rowStart = min(here.row, next.row)
       let rowEnd = max(here.row, next.row)
       for row in rowStart...rowEnd where grid[row][endCol] == nil {

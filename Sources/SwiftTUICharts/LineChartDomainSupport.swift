@@ -14,7 +14,7 @@ func plotDomain(series: [LineChartSeries]) -> LineChartDomain? {
   var maxY = -Double.infinity
   var any = false
   for s in series {
-    for p in s.points {
+    for p in s.points where p.x.isFinite && p.y.isFinite {
       any = true
       if p.x < minX { minX = p.x }
       if p.x > maxX { maxX = p.x }
@@ -28,20 +28,13 @@ func plotDomain(series: [LineChartSeries]) -> LineChartDomain? {
 
 /// Maps a domain X value to a column index in `[0, plotWidth)`.
 func xCell(value: Double, domain: ClosedRange<Double>, plotWidth: Int) -> Int {
-  let span = domain.upperBound - domain.lowerBound
-  guard span > 0, plotWidth > 0 else { return 0 }
-  let fraction = (value - domain.lowerBound) / span
-  let column = Int((fraction * Double(plotWidth - 1)).rounded())
-  return min(max(column, 0), plotWidth - 1)
+  guard plotWidth > 0 else { return 0 }
+  return chartCellOffset(chartUnitFraction(value, in: domain), maximum: plotWidth - 1)
 }
 
 /// Maps a domain Y value to an inverted row index in `[0, plotHeight)`.
 /// Thus, row 0 corresponds to the top of the plot.
 func yCell(value: Double, domain: ClosedRange<Double>, plotHeight: Int) -> Int {
-  let span = domain.upperBound - domain.lowerBound
-  guard span > 0, plotHeight > 0 else { return 0 }
-  let fraction = (value - domain.lowerBound) / span
-  let invertedFraction = 1 - fraction
-  let row = Int((invertedFraction * Double(plotHeight - 1)).rounded())
-  return min(max(row, 0), plotHeight - 1)
+  guard domain.upperBound > domain.lowerBound, plotHeight > 0 else { return 0 }
+  return chartCellOffset(1 - chartUnitFraction(value, in: domain), maximum: plotHeight - 1)
 }

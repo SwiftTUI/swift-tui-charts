@@ -21,11 +21,12 @@ public struct LineChartXAxis: Hashable, Sendable {
   public enum Ticks: Hashable, Sendable {
     /// The renderer selects ~5 evenly spaced ticks.
     case automatic
-    /// The renderer selects exactly `N` evenly spaced ticks across the plot.
+    /// Selects evenly spaced ticks, capped at the plot's useful cell resolution.
     case count(Int)
     /// The renderer selects approximately one tick for each `stride` of the domain.
     /// The renderer calculates the number of ticks from `span / stride`.
-    /// Then it spaces the ticks evenly across the plot, not at exact multiples of `stride`.
+    /// Then it spaces the ticks evenly across the plot, capped at the cell resolution.
+    /// Zero, negative, or nonfinite strides use the automatic tick count.
     /// Use `.dates(every:)` to align ticks with calendar boundaries.
     case every(stride: Double)
     /// Aligns ticks with calendar boundaries of the specified stride, such as month starts.
@@ -75,11 +76,12 @@ public struct LineChartYAxis: Hashable, Sendable {
   public enum Ticks: Hashable, Sendable {
     /// The renderer selects ~5 evenly spaced ticks.
     case automatic
-    /// The renderer selects exactly `N` evenly spaced ticks across the plot.
+    /// Selects evenly spaced ticks, capped at the plot's useful cell resolution.
     case count(Int)
     /// The renderer selects approximately one tick for each `stride` of the domain.
     /// The renderer calculates the number of ticks from `span / stride`.
-    /// Then it spaces the ticks evenly across the plot, not at exact multiples of `stride`.
+    /// Then it spaces the ticks evenly across the plot, capped at the cell resolution.
+    /// Zero, negative, or nonfinite strides use the automatic tick count.
     case every(stride: Double)
   }
 

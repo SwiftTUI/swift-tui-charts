@@ -57,3 +57,22 @@ trigger the framework's missing-label diagnostic.
 - The `FrameworkStress*` suites exercise retained-render churn. Each generation
   renders under a retained graph. The suites compare its raster and semantics
   with a fresh render.
+
+## Numeric input boundaries
+
+Line and sparkline samples with NaN or infinite coordinates are gaps. Only
+finite samples determine their domain; line connectors do not cross missing
+samples. Line and step samples retain authored order, including descending
+and duplicate X values. Finite domain interpolation remains valid even when
+the difference between its endpoints would overflow `Double`.
+
+Progress-style charts treat nonfinite values or totals as zero contribution.
+Large finite metric labels use scientific notation when an integer conversion
+would overflow. Stacked widths normalize finite weights before summing them;
+zero and missing segments receive no cells. An explicit total larger than
+the observed sum retains unfilled track capacity after rounding.
+
+Axis tick generation is bounded by plot resolution (with a minimum of two
+numeric endpoint ticks). Zero, negative, and nonfinite numeric strides use the
+automatic count. Calendar ticks remain aligned to the requested boundary and
+are thinned across the full domain at the available horizontal resolution.

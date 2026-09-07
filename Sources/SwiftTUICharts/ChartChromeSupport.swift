@@ -28,19 +28,18 @@ func sparklineGlyphString(
     return "[]"
   }
 
-  let minimum = values.min() ?? 0
-  let maximum = values.max() ?? 0
+  let finite = values.filter(\.isFinite)
+  let minimum = finite.min() ?? 0
+  let maximum = finite.max() ?? 0
   guard maximum > minimum else {
-    return String(repeating: "▄", count: values.count)
+    return values.map { $0.isFinite ? "▄" : " " }.joined()
   }
 
   let glyphs = Array("▁▂▃▄▅▆▇█")
   return values.map { value in
-    let normalized = min(max((value - minimum) / (maximum - minimum), 0), 1)
-    let index = min(
-      glyphs.count - 1,
-      max(0, Int((normalized * Double(glyphs.count - 1)).rounded()))
-    )
+    guard value.isFinite else { return " " }
+    let normalized = chartUnitFraction(value, in: minimum...maximum)
+    let index = chartCellOffset(normalized, maximum: glyphs.count - 1)
     return String(glyphs[index])
   }.joined()
 }
@@ -48,7 +47,8 @@ func sparklineGlyphString(
 func sparklineSummaryText(
   _ values: [Double]
 ) -> String {
-  guard let minimum = values.min(), let maximum = values.max() else {
+  let finite = values.filter(\.isFinite)
+  guard let minimum = finite.min(), let maximum = finite.max() else {
     return "no data"
   }
 
