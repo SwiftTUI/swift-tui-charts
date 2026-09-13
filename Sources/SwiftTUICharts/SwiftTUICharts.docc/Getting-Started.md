@@ -17,8 +17,8 @@ then depend on the `SwiftTUICharts` product:
 
 ```swift
 dependencies: [
-  .package(url: "https://github.com/SwiftTUI/swift-tui.git", exact: "0.13.1"),
-  .package(url: "https://github.com/SwiftTUI/swift-tui-charts.git", exact: "0.13.1"),
+  .package(url: "https://github.com/SwiftTUI/swift-tui.git", exact: "0.13.2"),
+  .package(url: "https://github.com/SwiftTUI/swift-tui-charts.git", exact: "0.13.2"),
 ],
 targets: [
   .executableTarget(
