@@ -50,6 +50,9 @@ func lineChartBody(
   )
   let composedGrid = composed.grid
   let cellSeriesIndex = composed.seriesIndex
+  let tones = series.map {
+    $0.tone == .automatic ? AnyShapeStyle(.tint) : metricAccentStyle(for: $0.tone)
+  }
 
   VStack(alignment: .leading, spacing: 0) {
     if legend.position == .top {
@@ -65,19 +68,7 @@ func lineChartBody(
           Text(row == baselineRow ? "┼" : "┤")
             .foregroundStyle(.separator)
         }
-        ForEach(0..<plotWidth, id: \.self) { col in
-          let cell = composedGrid[row][col]
-          let seriesIndex = cellSeriesIndex[row][col]
-          let toneStyle =
-            seriesIndex.flatMap { index -> AnyShapeStyle? in
-              guard index < series.count else { return nil }
-              return series[index].tone == .automatic
-                ? AnyShapeStyle(.tint)
-                : metricAccentStyle(for: series[index].tone)
-            } ?? AnyShapeStyle(.separator)
-          Text(cell.map { String($0.glyph) } ?? " ")
-            .foregroundStyle(toneStyle)
-        }
+        lineChartRow(composedGrid[row], seriesIndices: cellSeriesIndex[row], tones: tones)
       }
     }
     HStack(alignment: .center, spacing: 0) {
@@ -100,6 +91,33 @@ func lineChartBody(
       legendStrip(series: series, spacing: legend.itemSpacing)
     }
   }
+}
+
+// One public rich Text value per plot row keeps glyph/style runs in the text
+// payload instead of resolving a view and identity for every chart cell.
+@MainActor
+private func lineChartRow(
+  _ cells: [LineRasterCell?], seriesIndices: [Int?], tones: [AnyShapeStyle]
+) -> Text {
+  var interpolation = Text.StringInterpolation(
+    literalCapacity: cells.count, interpolationCount: cells.count)
+  var run = ""
+  var previousStyle: AnyShapeStyle?
+  for column in cells.indices {
+    let style =
+      seriesIndices[column].flatMap { tones.indices.contains($0) ? tones[$0] : nil }
+      ?? AnyShapeStyle(.separator)
+    if let previousStyle, previousStyle != style {
+      interpolation.appendInterpolation(Text(run).foregroundStyle(previousStyle))
+      run = ""
+    }
+    run.append(cells[column]?.glyph ?? " ")
+    previousStyle = style
+  }
+  if let previousStyle {
+    interpolation.appendInterpolation(Text(run).foregroundStyle(previousStyle))
+  }
+  return Text(Text.RichContent(stringInterpolation: interpolation))
 }
 
 private func formatXAxisLine(xTicks: [AxisTickLabel], plotWidth: Int) -> String {

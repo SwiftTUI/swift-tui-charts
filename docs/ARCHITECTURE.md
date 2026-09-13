@@ -35,6 +35,13 @@ One file per chart family (`BarChart.swift`, `LineChart.swift`, …) plus:
 - `LineChart*.swift`: domain, axes, tick, rasterization, and composition
   support for the line-chart family.
 
+Line-chart plots use one public rich `Text` value per row. Adjacent cells with
+the same semantic foreground style form a text run; axes and legends retain
+their ordinary view composition. Plot cells therefore do not each require a
+view identity. `DenseDashboardQualificationTests` preserves the preceding
+cell-view output across all five terminal profiles at 80×24 and 160×60, with
+1/8/32 series, and checks the accessible summary and a bounded graph size.
+
 ## Accessibility
 
 Every chart attaches `SemanticMetadata` with `accessibilityRole: .image`, a
