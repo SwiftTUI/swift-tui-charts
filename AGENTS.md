@@ -51,7 +51,7 @@ runs match the pinned toolchain in `.swift-version`.
   columns, ordered imports, and `private` instead of `fileprivate`.
 - Do not store `AnyView` without an `AnyView policy:` comment (policy in
   [docs/PUBLIC-API.md](docs/PUBLIC-API.md)).
-- Use Swift 6.3 language mode, strict memory safety, and the same upcoming
+- Use Swift 6 language mode, strict memory safety, and the same upcoming
   features as `swift-tui` (see `Package.swift`).
 - Use Swift Testing (`import Testing`, `@Test`, `#expect`) for tests.
 

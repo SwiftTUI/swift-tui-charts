@@ -27,7 +27,20 @@ run_swift() {
 }
 
 find .build -name 'SwiftTUICharts.symbols.json' -delete 2>/dev/null || true
-run_swift package dump-symbol-graph --minimum-access-level public --skip-synthesized-members >&2
+# Swift Build includes dependency reexports; this inventory tracks this module's declarations.
+dump_log="$(mktemp)"
+trap 'rm -f "$dump_log"' EXIT
+if ! run_swift package --build-system native dump-symbol-graph \
+  --minimum-access-level public --skip-synthesized-members >"$dump_log" 2>&1; then
+  # SwiftPM can request a graph for a synthetic test runner that it did not build.
+  # Only that diagnostic is harmless; library graphs are required below.
+  expected_error="^error: Failed to emit symbol graph for '.*Package(Discovered)?Tests':"
+  unexpected_errors="$(grep '^error:' "$dump_log" | grep -Ev "$expected_error" || true)"
+  if ! grep -Eq "$expected_error" "$dump_log" || [[ -n "$unexpected_errors" ]]; then
+    cat "$dump_log" >&2
+    exit 1
+  fi
+fi
 
 GRAPH="$(find .build -name 'SwiftTUICharts.symbols.json' | head -1)"
 if [[ -z "${GRAPH}" ]]; then

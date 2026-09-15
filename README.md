@@ -2,9 +2,9 @@
 
 **Compact charts for terminal UIs: bar, column, line, and stacked-bar charts, meters, gauges, sparklines, heatmaps, and timelines, all ordinary SwiftTUI views.**
 
-![Swift 6.3](https://img.shields.io/badge/Swift-6.3-F05138?logo=swift&logoColor=white)
+![Swift 6.4](https://img.shields.io/badge/Swift-6.4-F05138?logo=swift&logoColor=white)
 ![Platforms](https://img.shields.io/badge/platforms-macOS%2015%2B%20%C2%B7%20Linux%20%C2%B7%20WASI-1E90FF)
-![Status](https://img.shields.io/badge/status-0.13.3%20pre--release-DAA520)
+![Status](https://img.shields.io/badge/status-0.13.4%20pre--release-DAA520)
 ![License](https://img.shields.io/badge/license-MIT-3DA639)
 
 `swift-tui-charts` is the chart library for
@@ -50,8 +50,8 @@ Then add the `SwiftTUICharts` product from `swift-tui-charts`:
 
 ```swift
 dependencies: [
-  .package(url: "https://github.com/SwiftTUI/swift-tui.git", exact: "0.13.3"),
-  .package(url: "https://github.com/SwiftTUI/swift-tui-charts.git", exact: "0.13.3"),
+  .package(url: "https://github.com/SwiftTUI/swift-tui.git", exact: "0.13.4"),
+  .package(url: "https://github.com/SwiftTUI/swift-tui-charts.git", exact: "0.13.4"),
 ],
 targets: [
   .executableTarget(
