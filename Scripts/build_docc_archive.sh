@@ -46,7 +46,8 @@ if command -v swiftly >/dev/null 2>&1; then
   swift() { command swiftly run swift "$@"; }
 fi
 
-swift package \
+# Keep dependency re-exports out of this package's documentation graph.
+swift package --build-system native \
   --allow-writing-to-directory "$output_path" \
   generate-documentation \
   --target SwiftTUICharts \
