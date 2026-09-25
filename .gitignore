@@ -6,7 +6,3 @@ DerivedData/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
-
-
-# SwiftPM resolves dependencies fresh; libraries do not commit this.
-/Package.resolved
