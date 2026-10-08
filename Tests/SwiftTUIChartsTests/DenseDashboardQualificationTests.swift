@@ -48,7 +48,7 @@ struct DenseDashboardQualificationTests {
         }
         #expect(snapshot.rasterSurface.size == size)
         let key = "\(size.width)x\(size.height)/\(seriesCount)"
-        #expect(hashes == Self.originalRasterHashes[key])
+        #expect(hashes == Self.expectedRasterHashes[key])
         #expect(snapshot.diagnostics.counts.resolvedNodes < size.width * size.height / 4)
         let nodes = snapshot.semanticSnapshot.accessibilityNodes
         #expect(nodes.count == 2)
@@ -65,33 +65,34 @@ struct DenseDashboardQualificationTests {
     }
   }
 
-  // Captured from the cell-view implementation at 2b7a527, before changing
-  // production code. Includes glyphs, spaces and color escapes for the five
-  // supported terminal profiles in RenderedTextFixtureTerminalConfiguration.
-  private static let originalRasterHashes: [String: [UInt64]] = [
+  // Reviewed for SwiftTUI 0.16.0: the ANSI 256 and true-color hashes include
+  // the framework's contrast-adjusted foregrounds. The other three profiles
+  // retain their original cell-view hashes from 2b7a527. All five profiles
+  // continue to cover glyphs, spaces and color escapes.
+  private static let expectedRasterHashes: [String: [UInt64]] = [
     "80x24/1": [
       3_794_535_181_730_491_596, 14_120_472_051_396_231_410, 4_230_350_945_478_060_902,
-      15_893_500_352_874_344_475, 13_961_700_499_961_138_818,
+      16_518_984_085_631_272_665, 6_707_426_177_871_414_973,
     ],
     "80x24/8": [
       8_187_883_608_773_059_987, 13_279_631_796_247_779_380, 1_548_013_264_981_791_965,
-      14_851_768_244_255_769_477, 8_797_668_825_317_745_366,
+      8_105_613_871_801_398_095, 16_160_053_965_978_429_453,
     ],
     "80x24/32": [
       4_706_802_371_673_219_679, 9_466_899_708_610_300_559, 13_367_411_838_984_546_596,
-      13_964_394_672_864_949_748, 8_970_455_741_263_413_844,
+      17_258_458_955_337_977_174, 13_955_495_513_229_179_143,
     ],
     "160x60/1": [
       3_249_765_465_316_489_054, 9_475_297_198_345_390_290, 3_665_400_086_816_159_084,
-      18_382_274_619_432_652_785, 10_109_397_926_600_197_228,
+      18_369_070_134_433_081_991, 3_033_406_371_846_438_083,
     ],
     "160x60/8": [
       12_069_515_541_134_937_376, 1_426_397_075_838_323_378, 9_936_811_729_144_660_497,
-      17_283_440_971_046_684_401, 13_500_263_367_939_791_213,
+      18_338_462_107_613_537_055, 5_284_179_389_843_088_886,
     ],
     "160x60/32": [
       11_294_401_729_166_200_712, 12_240_321_692_306_271_740, 6_183_816_733_697_862_482,
-      5_086_557_663_598_899_479, 3_082_454_240_124_604_630,
+      14_640_684_002_648_124_117, 13_240_910_799_570_855_655,
     ],
   ]
 }

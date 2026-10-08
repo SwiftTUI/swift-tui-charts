@@ -49,7 +49,7 @@ struct ChartAccessibilityTests {
 
     #expect(
       output.contains(
-        "warning: Sparkline omitted from accessibility output; add accessibilityLabel(...) or accessibilityHidden(true)."
+        "warning: Sparkline omitted from accessibility output; add accessibilityLabel(...) for a simple description, accessibilityRepresentation { ... } for data and operations, or accessibilityHidden(true) for decoration."
       )
     )
     #expect(!output.contains("image:"))
