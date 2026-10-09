@@ -8,6 +8,7 @@ public struct StackedBarChart<Label: View, Summary: View>: View {
   private let label: Label
   private let summary: Summary
   private let accessibilitySummary: String?
+  @Environment(\.accessibilityPreferences) private var colorPreferences
 
   public init(
     entries: [BarChartEntry],
@@ -46,19 +47,26 @@ public struct StackedBarChart<Label: View, Summary: View>: View {
     let effectiveTotal = stackedBarEffectiveTotal(entries, total: total)
 
     VStack(alignment: .leading, spacing: 0) {
-      chartHeader(label: label, summary: summary)
-      stackedBarTrackView(
-        entries,
-        total: effectiveTotal,
-        barWidth: barWidth
-      )
+      chartHeader(label: label, summary: summary, accessibilitySummary: accessibilitySummary)
+      VStack(alignment: .leading, spacing: 0) {
+        if chartUsesColorCues(colorPreferences) {
+          // A labeled row per segment preserves arbitrarily many categories;
+          // a repeating finite symbol palette would make larger sets ambiguous.
+          ForEach(entries.indices, id: \.self) { index in
+            Text("\(entries[index].label): \(metricValueString(entries[index].value))")
+            ChartToneCue(tone: entries[index].tone)
+            stackedBarTrackView([entries[index]], total: effectiveTotal, barWidth: barWidth)
+          }
+        } else {
+          stackedBarTrackView(entries, total: effectiveTotal, barWidth: barWidth)
+        }
+      }.accessibilityRepresentation {
+        ChartDataView(
+          barChartData(entries) + [
+            .init("Displayed total", value: stackedBarEffectiveTotal(entries, total: total))
+          ], title: "StackedBarChart data")
+      }
     }
-    .semanticMetadata(
-      chartAccessibilityMetadata(
-        kind: "StackedBarChart",
-        label: accessibilitySummary
-      )
-    )
   }
 }
 

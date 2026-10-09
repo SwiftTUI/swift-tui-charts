@@ -66,3 +66,14 @@ versions and upgrades independently of your app's runtime integration.
 ### Guide
 
 - <doc:Building-Dashboards>
+
+## Accessible source data
+
+All chart families publish bounded data review alongside their authored headers.
+Use ``ChartDataView`` for custom graphics and `chartDataUnit(_:)` to supply units.
+Data position, search and a remembered point support exact lookup and comparison
+without adding painted rows. Application interactions need controls bound to the
+same state as the visual chart.
+
+- ``ChartDataView``
+- ``ChartDataRecord``

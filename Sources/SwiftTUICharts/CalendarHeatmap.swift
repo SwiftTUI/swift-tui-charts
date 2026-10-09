@@ -30,11 +30,6 @@ public struct CalendarHeatmap<Label: View, Summary: View>: View {
     @ViewBuilder label: () -> Label,
     @ViewBuilder summary: () -> Summary
   ) {
-    // Even when the caller supplies their own label/summary views, we
-    // still want a synthesized accessibility summary so VoiceOver users
-    // hear a meaningful description. The convenience inits below
-    // override this when they have a title to compose with.
-    let summarizedDayCount = "\(days.count) days"
     self.init(
       days: days,
       range: range,
@@ -45,7 +40,7 @@ public struct CalendarHeatmap<Label: View, Summary: View>: View {
       showsDayLabels: showsDayLabels,
       showsScaleLegend: showsScaleLegend,
       tone: tone,
-      accessibilitySummary: summarizedDayCount,
+      accessibilitySummary: nil,
       label: label,
       summary: summary
     )
@@ -84,22 +79,23 @@ public struct CalendarHeatmap<Label: View, Summary: View>: View {
     let bucket = bucketDays(days, range: effectiveRange, calendar: calendar, weekStart: weekStart)
 
     VStack(alignment: .leading, spacing: 0) {
-      chartHeader(label: label, summary: summary)
-      calendarHeatmapBody(
-        bucket: bucket,
-        cellWidth: cellWidth,
-        tone: tone,
-        showsMonthHeader: showsMonthHeader,
-        showsDayLabels: showsDayLabels,
-        showsScaleLegend: showsScaleLegend
-      )
+      chartHeader(label: label, summary: summary, accessibilitySummary: accessibilitySummary)
+      VStack(alignment: .leading, spacing: 0) {
+        calendarHeatmapBody(
+          bucket: bucket,
+          cellWidth: cellWidth,
+          tone: tone,
+          showsMonthHeader: showsMonthHeader,
+          showsDayLabels: showsDayLabels,
+          showsScaleLegend: showsScaleLegend
+        )
+      }.accessibilityRepresentation {
+        ChartDataView(
+          calendarHeatmapData(
+            bucket: bucket, range: effectiveRange, calendar: calendar, weekStart: weekStart),
+          title: "CalendarHeatmap data")
+      }
     }
-    .semanticMetadata(
-      chartAccessibilityMetadata(
-        kind: "CalendarHeatmap",
-        label: accessibilitySummary
-      )
-    )
   }
 }
 

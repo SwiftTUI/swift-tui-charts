@@ -56,21 +56,21 @@ public struct BulletChart<Label: View, Summary: View>: View {
     let accentStyle = metricAccentStyle(for: tone)
 
     VStack(alignment: .leading, spacing: 0) {
-      chartHeader(label: label, summary: summary)
-      bulletChartTrackView(
-        value: value,
-        target: target,
-        total: total,
-        barWidth: barWidth,
-        accentStyle: accentStyle
-      )
+      chartHeader(label: label, summary: summary, accessibilitySummary: accessibilitySummary)
+      VStack(alignment: .leading, spacing: 0) {
+        bulletChartTrackView(
+          value: value,
+          target: target,
+          total: total,
+          barWidth: barWidth,
+          accentStyle: accentStyle
+        )
+      }.accessibilityRepresentation {
+        ChartDataView(
+          meterChartData(value: value, total: total) + [.init("Target", value: target)],
+          title: "BulletChart data")
+      }
     }
-    .semanticMetadata(
-      chartAccessibilityMetadata(
-        kind: "BulletChart",
-        label: accessibilitySummary
-      )
-    )
   }
 }
 

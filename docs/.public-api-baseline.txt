@@ -45,6 +45,17 @@ SwiftTUICharts.CalendarHeatmap.weekStart
 SwiftTUICharts.CalendarHeatmapWeekStart
 SwiftTUICharts.CalendarHeatmapWeekStart.monday
 SwiftTUICharts.CalendarHeatmapWeekStart.sunday
+SwiftTUICharts.ChartDataRecord
+SwiftTUICharts.ChartDataRecord.category
+SwiftTUICharts.ChartDataRecord.detail
+SwiftTUICharts.ChartDataRecord.id
+SwiftTUICharts.ChartDataRecord.init(_:value:series:detail:unit:id:)
+SwiftTUICharts.ChartDataRecord.series
+SwiftTUICharts.ChartDataRecord.unit
+SwiftTUICharts.ChartDataRecord.value
+SwiftTUICharts.ChartDataView
+SwiftTUICharts.ChartDataView.body
+SwiftTUICharts.ChartDataView.init(_:title:)
 SwiftTUICharts.ColumnChart
 SwiftTUICharts.ColumnChart.body
 SwiftTUICharts.ColumnChart.chartHeight
@@ -217,3 +228,4 @@ SwiftTUICharts.TimelineEntry.detail
 SwiftTUICharts.TimelineEntry.init(_:detail:tone:)
 SwiftTUICharts.TimelineEntry.title
 SwiftTUICharts.TimelineEntry.tone
+SwiftTUICharts.View.chartDataUnit(_:)

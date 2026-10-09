@@ -13,6 +13,14 @@ public struct Timeline: View {
       ForEach(entries.indices, id: \.self) { index in
         timelineEntryView(entries[index], isLast: index == entries.count - 1)
       }
+    }.accessibilityRepresentation {
+      ChartDataView(
+        entries.map { entry in
+          .init(
+            entry.title,
+            detail: [entry.detail, chartDataTone(entry.tone)].compactMap { $0 }.joined(
+              separator: ", "))
+        }, title: "Timeline data")
     }
   }
 }

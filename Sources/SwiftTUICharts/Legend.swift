@@ -23,6 +23,9 @@ public struct Legend<Label: View>: View {
         ForEach(items.indices, id: \.self) { index in
           legendItemView(items[index])
         }
+      }.accessibilityRepresentation {
+        ChartDataView(
+          items.map { .init($0.label, detail: chartDataTone($0.tone)) }, title: "Legend data")
       }
     }
   }

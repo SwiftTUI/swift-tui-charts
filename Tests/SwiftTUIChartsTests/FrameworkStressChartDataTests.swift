@@ -42,9 +42,15 @@ private func chartDataExercise<Root: View>(
     )
     if compareSemanticSnapshot {
       #expect(
-        retained.semanticSnapshot == fresh.semanticSnapshot,
+        chartDataPublicNodes(retained.semanticSnapshot)
+          == chartDataPublicNodes(fresh.semanticSnapshot),
         "retained semantics diverged in chart attempt \(attempt), generation \(generation)"
       )
+      #expect(retained.semanticSnapshot.focusRegions.isEmpty)
+      #expect(retained.semanticSnapshot.interactionRegions.isEmpty)
+      #expect(
+        retained.semanticSnapshot.accessibilityAnnouncements
+          == fresh.semanticSnapshot.accessibilityAnnouncements)
     } else {
       let retainedNodes = retained.semanticSnapshot.accessibilityNodes
       let freshNodes = fresh.semanticSnapshot.accessibilityNodes
@@ -59,6 +65,26 @@ private func chartDataExercise<Root: View>(
       #expect(retainedNodes.map(\.cursorAnchor) == freshNodes.map(\.cursorAnchor))
     }
     verify(generation, retained)
+  }
+}
+
+// Runtime node IDs and action target lifetimes intentionally differ between
+// a retained graph and a fresh graph after topology changes. Compare every
+// public node field while checking routing-token presence, not opaque contents.
+private func chartDataPublicNodes(_ snapshot: SemanticSnapshot) -> [AccessibilityNode] {
+  snapshot.accessibilityNodes.map { source in
+    var node = AccessibilityNode(
+      identity: source.identity, parentIdentity: source.parentIdentity,
+      rect: source.rect, role: source.role, label: source.label, hint: source.hint,
+      hidden: source.hidden, liveRegion: source.liveRegion, cursorAnchor: source.cursorAnchor)
+    node.actionTarget = source.actionTarget == nil ? nil : "present"
+    node.properties = source.properties
+    node.control = source.control
+    node.isEnabled = source.isEnabled
+    node.isAccessibilityFocused = source.isAccessibilityFocused
+    node.navigationCategories = source.navigationCategories
+    node.textInput = source.textInput
+    return node
   }
 }
 

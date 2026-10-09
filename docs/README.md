@@ -12,3 +12,5 @@ live in the SwiftTUI org coordination root.
 
 Developer-facing guides and per-symbol reference live in the DocC catalog at
 `Sources/SwiftTUICharts/SwiftTUICharts.docc/`.
+
+- [Accessible chart data](ACCESSIBILITY.md) — source values, units, review, and custom graphics.

@@ -26,7 +26,7 @@ run_swift() {
   fi
 }
 
-find .build -name 'SwiftTUICharts.symbols.json' -delete 2>/dev/null || true
+find .build -name 'SwiftTUICharts*.symbols.json' -delete 2>/dev/null || true
 # Swift Build includes dependency reexports; this inventory tracks this module's declarations.
 dump_log="$(mktemp)"
 trap 'rm -f "$dump_log"' EXIT
@@ -51,16 +51,21 @@ fi
 SYMBOLS="$(python3 - "${GRAPH}" <<'PY'
 import json
 import sys
+from pathlib import Path
 
-graph = json.load(open(sys.argv[1]))
 lines = set()
-for symbol in graph.get("symbols", []):
-    if symbol.get("accessLevel") != "public":
+# Declarations extending another module (such as View.chartDataUnit) live
+# in SwiftTUICharts@OtherModule.symbols.json and are public chart API too.
+for graph_path in Path(sys.argv[1]).parent.glob("SwiftTUICharts*.symbols.json"):
+    graph = json.loads(graph_path.read_text())
+    if graph.get("module", {}).get("name") != "SwiftTUICharts":
         continue
-    path = symbol.get("pathComponents", [])
-    if not path:
-        continue
-    lines.add("SwiftTUICharts." + ".".join(path))
+    for symbol in graph.get("symbols", []):
+        if symbol.get("accessLevel") != "public":
+            continue
+        path = symbol.get("pathComponents", [])
+        if path:
+            lines.add("SwiftTUICharts." + ".".join(path))
 print("\n".join(sorted(lines)))
 PY
 )"

@@ -9,14 +9,15 @@ func lineChartBody(
   xAxis: LineChartXAxis,
   yAxis: LineChartYAxis,
   legend: LineChartLegendConfig,
-  baseline: LineChartBaseline
+  baseline: LineChartBaseline,
+  sharedDomain: LineChartDomain? = nil
 ) -> some View {
   let yAxisLabelWidth = yAxis.isHidden ? 0 : 6
   let yAxisChromeWidth = yAxis.isHidden ? 0 : 2
   let plotWidth = max(1, width - yAxisLabelWidth - yAxisChromeWidth)
   let plotHeight = max(1, height)
 
-  let domainOrNil = plotDomain(series: series)
+  let domainOrNil = sharedDomain ?? plotDomain(series: series)
   let domain = domainOrNil ?? LineChartDomain(x: 0...1, y: 0...1)
 
   let yTicks = yAxisTickLabels(
@@ -146,6 +147,7 @@ private func legendStrip(series: [LineChartSeries], spacing: Int) -> some View {
       HStack(alignment: .center, spacing: 1) {
         Text("●").foregroundStyle(toneStyle)
         Text(series[index].label).foregroundStyle(.foreground)
+        ChartToneCue(tone: series[index].tone)
       }
     }
   }

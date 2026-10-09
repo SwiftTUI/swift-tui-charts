@@ -20,7 +20,8 @@ func isEmptyView<V: View>(
 @ViewBuilder
 func chartHeader<Label: View, Summary: View>(
   label: Label,
-  summary: Summary
+  summary: Summary,
+  accessibilitySummary: String? = nil
 ) -> some View {
   if !isEmptyView(label) || !isEmptyView(summary) {
     HStack(alignment: .center, spacing: 1) {
@@ -33,19 +34,11 @@ func chartHeader<Label: View, Summary: View>(
         summary
           .foregroundStyle(.separator)
       }
-    }
+    }.semanticMetadata(
+      .init(
+        accessibilityRole: accessibilitySummary == nil ? nil : .group,
+        accessibilityLabel: accessibilitySummary))
   }
-}
-
-func chartAccessibilityMetadata(
-  kind: String,
-  label: String?
-) -> SemanticMetadata {
-  .init(
-    accessibilityRole: .image,
-    accessibilityLabel: label,
-    accessibilityVisualContent: .init(kind: kind)
-  )
 }
 
 func chartAccessibilityLabel(
@@ -80,6 +73,7 @@ func timelineEntryView(
       VStack(alignment: .leading, spacing: 0) {
         Text(entry.title)
           .lineLimit(1)
+        ChartToneCue(tone: entry.tone)
         Text(detail)
           .foregroundStyle(.separator)
           .lineLimit(1)
@@ -91,6 +85,7 @@ func timelineEntryView(
         .foregroundStyle(accentStyle)
       Text(entry.title)
         .lineLimit(1)
+      ChartToneCue(tone: entry.tone)
     }
   }
 }
@@ -110,5 +105,6 @@ func legendItemView(
       .foregroundStyle(accentStyle)
     Text(item.label)
       .foregroundStyle(.foreground)
+    ChartToneCue(tone: item.tone)
   }
 }

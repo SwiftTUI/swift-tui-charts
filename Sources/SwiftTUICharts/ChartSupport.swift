@@ -196,5 +196,6 @@ func barChartRow(
     }
     Text(metricValueString(entry.value))
       .foregroundStyle(.separator)
+    ChartToneCue(tone: entry.tone)
   }
 }

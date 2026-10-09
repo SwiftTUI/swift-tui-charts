@@ -9,6 +9,7 @@ public struct ThresholdGauge<Label: View, Summary: View>: View {
   private let label: Label
   private let summary: Summary
   private let accessibilitySummary: String?
+  @Environment(\.accessibilityPreferences) private var colorPreferences
 
   public init(
     value: Double,
@@ -49,20 +50,32 @@ public struct ThresholdGauge<Label: View, Summary: View>: View {
 
   public var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-      chartHeader(label: label, summary: summary)
-      thresholdGaugeTrackView(
-        value: value,
-        total: total,
-        bands: bands,
-        barWidth: barWidth
-      )
+      chartHeader(label: label, summary: summary, accessibilitySummary: accessibilitySummary)
+      VStack(alignment: .leading, spacing: 0) {
+        thresholdGaugeTrackView(
+          value: value,
+          total: total,
+          bands: bands,
+          barWidth: barWidth
+        )
+        if chartUsesColorCues(colorPreferences) {
+          Text("Current: \(metricValueString(value))")
+          ChartToneCue(tone: thresholdBandTone(for: value, total: total, bands: bands))
+          let displayedBands = thresholdBandsSorted(bands, total: total)
+          ForEach(displayedBands.indices, id: \.self) { index in
+            HStack(spacing: 1) {
+              Text(
+                "Band \(index + 1) through \(metricValueString(displayedBands[index].upperBound))")
+              ChartToneCue(tone: displayedBands[index].tone)
+            }
+          }
+        }
+      }.accessibilityRepresentation {
+        ChartDataView(
+          thresholdChartData(value: value, total: total, bands: bands), title: "ThresholdGauge data"
+        )
+      }
     }
-    .semanticMetadata(
-      chartAccessibilityMetadata(
-        kind: "ThresholdGauge",
-        label: accessibilitySummary
-      )
-    )
   }
 }
 

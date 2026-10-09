@@ -46,20 +46,18 @@ public struct ColumnChart<Label: View, Summary: View>: View {
     let maximumValue = max(1, entries.map { abs($0.value) }.max() ?? 1)
 
     VStack(alignment: .leading, spacing: 0) {
-      chartHeader(label: label, summary: summary)
-      columnChartBody(
-        entries: entries,
-        maximumValue: maximumValue,
-        chartHeight: chartHeight,
-        columnWidth: columnWidth
-      )
+      chartHeader(label: label, summary: summary, accessibilitySummary: accessibilitySummary)
+      VStack(alignment: .leading, spacing: 0) {
+        columnChartBody(
+          entries: entries,
+          maximumValue: maximumValue,
+          chartHeight: chartHeight,
+          columnWidth: columnWidth
+        )
+      }.accessibilityRepresentation {
+        ChartDataView(barChartData(entries), title: "ColumnChart data")
+      }
     }
-    .semanticMetadata(
-      chartAccessibilityMetadata(
-        kind: "ColumnChart",
-        label: accessibilitySummary
-      )
-    )
   }
 }
 

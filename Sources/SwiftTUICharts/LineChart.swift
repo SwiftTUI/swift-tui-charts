@@ -15,6 +15,7 @@ public struct LineChart<Label: View, Summary: View>: View {
   private let label: Label
   private let summary: Summary
   private let accessibilitySummary: String?
+  @Environment(\.accessibilityPreferences) private var colorPreferences
 
   public init(
     series: [LineChartSeries],
@@ -23,11 +24,6 @@ public struct LineChart<Label: View, Summary: View>: View {
     @ViewBuilder label: () -> Label,
     @ViewBuilder summary: () -> Summary
   ) {
-    // Even when the caller supplies their own label/summary views, we
-    // still want a synthesized accessibility summary so VoiceOver users
-    // hear a meaningful description. The convenience inits below
-    // override this when they have a title to compose with.
-    let summarizedSeriesCount = "\(series.count) series"
     self.init(
       series: series,
       height: height,
@@ -36,7 +32,7 @@ public struct LineChart<Label: View, Summary: View>: View {
       yAxis: .automatic,
       legend: .bottom,
       baseline: .auto,
-      accessibilitySummary: summarizedSeriesCount,
+      accessibilitySummary: nil,
       label: label,
       summary: summary
     )
@@ -69,23 +65,35 @@ public struct LineChart<Label: View, Summary: View>: View {
   public var body: some View {
     let effectiveWidth = max(20, width ?? 60)  // assume an 80-col terminal minus padding
     VStack(alignment: .leading, spacing: 0) {
-      chartHeader(label: label, summary: summary)
-      lineChartBody(
-        series: series,
-        height: height,
-        width: effectiveWidth,
-        xAxis: xAxis,
-        yAxis: yAxis,
-        legend: legend,
-        baseline: baseline
-      )
+      chartHeader(label: label, summary: summary, accessibilitySummary: accessibilitySummary)
+      VStack(alignment: .leading, spacing: 0) {
+        if chartUsesColorCues(colorPreferences), series.count > 1 {
+          // Small multiples retain a shared scale, labels and all source data
+          // when coincident or crossing series cannot be distinguished by hue.
+          ForEach(series.indices, id: \.self) { index in
+            Text(series[index].label.isEmpty ? "Series \(index + 1)" : series[index].label)
+            ChartToneCue(tone: series[index].tone)
+            lineChartBody(
+              series: [series[index]], height: height, width: effectiveWidth,
+              xAxis: xAxis, yAxis: yAxis, legend: .hidden, baseline: baseline,
+              sharedDomain: plotDomain(series: series))
+          }
+        } else {
+          lineChartBody(
+            series: series,
+            height: height,
+            width: effectiveWidth,
+            xAxis: xAxis,
+            yAxis: yAxis,
+            legend: legend,
+            baseline: baseline
+          )
+        }
+      }.accessibilityRepresentation {
+        ChartDataView(
+          lineChartData(series, xAxis: xAxis, baseline: baseline), title: "LineChart data")
+      }
     }
-    .semanticMetadata(
-      chartAccessibilityMetadata(
-        kind: "LineChart",
-        label: accessibilitySummary
-      )
-    )
   }
 }
 

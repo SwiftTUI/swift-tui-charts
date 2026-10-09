@@ -145,7 +145,7 @@ private func nextStrideBoundary(
   return truncated
 }
 
-private func formatX(value: Double, using format: LineChartXAxis.Format) -> String {
+func formatX(value: Double, using format: LineChartXAxis.Format) -> String {
   switch format {
   case .automatic, .number:
     let style: FloatingPointFormatStyle<Double>

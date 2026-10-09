@@ -46,22 +46,20 @@ public struct ComparisonChart<Label: View, Summary: View>: View {
     let maximumValue = comparisonChartMaximumValue(entries)
 
     VStack(alignment: .leading, spacing: 0) {
-      chartHeader(label: label, summary: summary)
-      ForEach(entries.indices, id: \.self) { index in
-        comparisonChartRow(
-          entries[index],
-          maximumValue: maximumValue,
-          barWidth: barWidth,
-          labelWidth: labelWidth
-        )
+      chartHeader(label: label, summary: summary, accessibilitySummary: accessibilitySummary)
+      VStack(alignment: .leading, spacing: 0) {
+        ForEach(entries.indices, id: \.self) { index in
+          comparisonChartRow(
+            entries[index],
+            maximumValue: maximumValue,
+            barWidth: barWidth,
+            labelWidth: labelWidth
+          )
+        }
+      }.accessibilityRepresentation {
+        ChartDataView(comparisonChartData(entries), title: "ComparisonChart data")
       }
     }
-    .semanticMetadata(
-      chartAccessibilityMetadata(
-        kind: "ComparisonChart",
-        label: accessibilitySummary
-      )
-    )
   }
 }
 

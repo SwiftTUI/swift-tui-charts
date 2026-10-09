@@ -261,3 +261,34 @@ private func calendarHeatmapScaleLegendRow(
     Text("More").foregroundStyle(.separator)
   }
 }
+
+/// Uses the same day buckets, range and calendar as the painted heatmap.
+func calendarHeatmapData(
+  bucket: CalendarHeatmapBucket, range: ClosedRange<Date>, calendar: Calendar,
+  weekStart: CalendarHeatmapWeekStart
+) -> [ChartDataRecord] {
+  let lower = calendar.startOfDay(for: range.lowerBound)
+  let upper = calendar.startOfDay(for: range.upperBound)
+  let first = startOfWeek(lower, weekStart: weekStart, calendar: calendar)
+  var day = lower
+  var records: [ChartDataRecord] = []
+  let formatter = DateFormatter()
+  formatter.calendar = calendar
+  formatter.timeZone = calendar.timeZone
+  formatter.locale = Locale(identifier: "en_US_POSIX")
+  formatter.dateFormat = "yyyy-MM-dd"
+  while day <= upper {
+    let (row, column) = position(of: day, from: first, calendar: calendar)
+    let value = bucket.grid[row][column]
+    let detail =
+      (value == nil ? "No data; " : "Daily aggregate; ")
+      + "\(String(describing: calendar.identifier)), \(calendar.timeZone.identifier)"
+    records.append(
+      .init(
+        formatter.string(from: day), value: value, series: "Daily total",
+        detail: detail, id: String(day.timeIntervalSinceReferenceDate)))
+    guard let next = calendar.date(byAdding: .day, value: 1, to: day), next > day else { break }
+    day = next
+  }
+  return records
+}

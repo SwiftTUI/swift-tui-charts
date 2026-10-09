@@ -41,19 +41,17 @@ public struct HeatStrip<Label: View, Summary: View>: View {
     let maximumValue = max(1, entries.map { abs($0.value) }.max() ?? 1)
 
     VStack(alignment: .leading, spacing: 0) {
-      chartHeader(label: label, summary: summary)
-      heatStripBody(
-        entries: entries,
-        maximumValue: maximumValue,
-        cellWidth: cellWidth
-      )
+      chartHeader(label: label, summary: summary, accessibilitySummary: accessibilitySummary)
+      VStack(alignment: .leading, spacing: 0) {
+        heatStripBody(
+          entries: entries,
+          maximumValue: maximumValue,
+          cellWidth: cellWidth
+        )
+      }.accessibilityRepresentation {
+        ChartDataView(barChartData(entries), title: "HeatStrip data")
+      }
     }
-    .semanticMetadata(
-      chartAccessibilityMetadata(
-        kind: "HeatStrip",
-        label: accessibilitySummary
-      )
-    )
   }
 }
 

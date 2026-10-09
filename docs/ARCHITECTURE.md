@@ -44,11 +44,12 @@ cell-view output across all five terminal profiles at 80×24 and 160×60, with
 
 ## Accessibility
 
-Every chart attaches `SemanticMetadata` with `accessibilityRole: .image`, a
-synthesized (or caller-provided) label, and an `AccessibilityVisualContent`
-kind. Titled convenience initializers create a summary. Thus, assistive output
-always receives a meaningful description. Custom charts without a label
-trigger the framework's missing-label diagnostic.
+Every chart supplies a bounded `ChartDataView` semantic representation retaining
+source values and relationships. Headers preserve authored names. See
+[accessible chart data](ACCESSIBILITY.md) for review controls and custom graphics.
+`ChartColorPolicy.swift` supplies visible tone words; selected color preferences
+also expand stacked/threshold charts and split multi-series plots into labeled
+small multiples on a common scale.
 
 ## Tests
 

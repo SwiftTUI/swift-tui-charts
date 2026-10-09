@@ -46,22 +46,20 @@ public struct BarChart<Label: View, Summary: View>: View {
     let maximumValue = max(1, entries.map { abs($0.value) }.max() ?? 1)
 
     VStack(alignment: .leading, spacing: 0) {
-      chartHeader(label: label, summary: summary)
-      ForEach(entries.indices, id: \.self) { index in
-        barChartRow(
-          entries[index],
-          maximumValue: maximumValue,
-          barWidth: barWidth,
-          labelWidth: labelWidth
-        )
+      chartHeader(label: label, summary: summary, accessibilitySummary: accessibilitySummary)
+      VStack(alignment: .leading, spacing: 0) {
+        ForEach(entries.indices, id: \.self) { index in
+          barChartRow(
+            entries[index],
+            maximumValue: maximumValue,
+            barWidth: barWidth,
+            labelWidth: labelWidth
+          )
+        }
+      }.accessibilityRepresentation {
+        ChartDataView(barChartData(entries), title: "BarChart data")
       }
     }
-    .semanticMetadata(
-      chartAccessibilityMetadata(
-        kind: "BarChart",
-        label: accessibilitySummary
-      )
-    )
   }
 }
 

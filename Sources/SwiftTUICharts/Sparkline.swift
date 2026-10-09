@@ -39,16 +39,17 @@ public struct Sparkline<Label: View, Summary: View>: View {
 
   public var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-      chartHeader(label: label, summary: trailing)
+      chartHeader(label: label, summary: trailing, accessibilitySummary: accessibilitySummary)
       Text(sparklineGlyphString(values))
         .foregroundStyle(metricAccentStyle(for: tone))
+        .accessibilityRepresentation {
+          ChartDataView(
+            values.enumerated().map { index, value in
+              ChartDataRecord("Sample \(index + 1)", value: value, id: String(index))
+            }, title: "Sparkline data")
+        }
     }
-    .semanticMetadata(
-      chartAccessibilityMetadata(
-        kind: "Sparkline",
-        label: accessibilitySummary
-      )
-    )
+
   }
 }
 

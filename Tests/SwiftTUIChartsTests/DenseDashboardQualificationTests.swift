@@ -51,13 +51,16 @@ struct DenseDashboardQualificationTests {
         #expect(hashes == Self.expectedRasterHashes[key])
         #expect(snapshot.diagnostics.counts.resolvedNodes < size.width * size.height / 4)
         let nodes = snapshot.semanticSnapshot.accessibilityNodes
-        #expect(nodes.count == 2)
-        #expect(nodes.last?.role == .image)
-        #expect(nodes.last?.label == "\(seriesCount) series")
+        #expect(nodes.count < 40)
+        #expect(nodes.contains { $0.label == "Dense dashboard" })
+        #expect(nodes.contains { $0.label == "\(seriesCount) streams" })
+        #expect(nodes.contains { $0.label == "\(seriesCount * 64) data records" })
         #expect(
-          nodes.last?.rect
-            == CellRect(origin: .zero, size: .init(width: size.width, height: size.height - 1)))
-        #expect(nodes.last?.hidden == false)
+          nodes.contains {
+            $0.label == "Data position" && $0.control?.maximum == Double(seriesCount * 64)
+          })
+        #expect(!nodes.contains { $0.role == .image })
+        #expect(snapshot.semanticSnapshot.focusRegions.isEmpty)
         print(
           "DENSE|\(key)|nodes=\(snapshot.diagnostics.counts.resolvedNodes)|ms=\(durations.sorted()[1])|hashes=\(hashes)"
         )

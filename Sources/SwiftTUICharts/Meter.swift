@@ -54,20 +54,19 @@ public struct Meter<Label: View, CurrentValueLabel: View>: View {
     )
 
     VStack(alignment: .leading, spacing: 0) {
-      chartHeader(label: label, summary: currentValueLabel)
-      HStack(alignment: .center, spacing: 0) {
-        Text(track.filled)
-          .foregroundStyle(metricAccentStyle(for: tone))
-        Text(track.empty)
-          .foregroundStyle(.separator)
+      chartHeader(
+        label: label, summary: currentValueLabel, accessibilitySummary: accessibilitySummary)
+      VStack(alignment: .leading, spacing: 0) {
+        HStack(alignment: .center, spacing: 0) {
+          Text(track.filled)
+            .foregroundStyle(metricAccentStyle(for: tone))
+          Text(track.empty)
+            .foregroundStyle(.separator)
+        }
+      }.accessibilityRepresentation {
+        ChartDataView(meterChartData(value: value, total: total), title: "Meter data")
       }
     }
-    .semanticMetadata(
-      chartAccessibilityMetadata(
-        kind: "Meter",
-        label: accessibilitySummary
-      )
-    )
   }
 }
 
