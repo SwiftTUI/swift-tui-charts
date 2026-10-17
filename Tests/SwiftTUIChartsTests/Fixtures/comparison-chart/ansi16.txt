@@ -4,6 +4,6 @@ surface 30x4
 capability glyph=unicode color=ansi16 styles=true
 appearance fg=#ECEFF4 bg=#1E222A tint=#56B6C2 contrast=increased source=fallback
 01│\u{001B}[90mRegions\u{001B}[0m················\u{001B}[90mmax·100\u{001B}[0m
-02│\u{001B}[97musw2\u{001B}[0m···\u{001B}[92m██████\u{001B}[0m\u{001B}[96m◆\u{001B}[0m\u{001B}[90m───\u{001B}[0m·\u{001B}[90m72/64\u{001B}[0m
-03│\u{001B}[97muse1\u{001B}[0m···\u{001B}[93m█████\u{001B}[0m\u{001B}[96m◆\u{001B}[0m\u{001B}[90m────\u{001B}[0m·\u{001B}[90m58/61\u{001B}[0m
-04│\u{001B}[97meuw1\u{001B}[0m···\u{001B}[96m███████◆\u{001B}[0m\u{001B}[90m──\u{001B}[0m·\u{001B}[90m81/73\u{001B}[0m
+02│\u{001B}[97musw2\u{001B}[0m···\u{001B}[37m██████\u{001B}[0m\u{001B}[37m◆\u{001B}[0m\u{001B}[90m───\u{001B}[0m·\u{001B}[90m72/64\u{001B}[0m
+03│\u{001B}[97muse1\u{001B}[0m···\u{001B}[37m█████\u{001B}[0m\u{001B}[37m◆\u{001B}[0m\u{001B}[90m────\u{001B}[0m·\u{001B}[90m58/61\u{001B}[0m
+04│\u{001B}[97meuw1\u{001B}[0m···\u{001B}[37m███████◆\u{001B}[0m\u{001B}[90m──\u{001B}[0m·\u{001B}[90m81/73\u{001B}[0m
