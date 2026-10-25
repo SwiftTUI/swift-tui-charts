@@ -226,6 +226,143 @@ struct CalendarTickCase: Sendable, CustomTestStringConvertible {
   var testDescription: String { name }
 }
 
+// One tick per useful cell (STUI-1175). Over 0...10 the X lower bound maps to
+// column 0 and the Y upper bound to row 0, so a one-cell axis keeps exactly that
+// tick. An axis with two or more cells keeps both endpoint ticks.
+@Suite("LineChart tick resolution cap")
+struct LineChartTickResolutionTests {
+  static let xStrategies: [LineChartXAxis.Ticks] = [
+    .automatic, .count(0), .count(1), .count(5), .count(Int.max),
+    .every(stride: 3), .every(stride: 100), .every(stride: 1e-12), .every(stride: 0),
+    .every(stride: -1), .every(stride: .nan), .every(stride: .infinity),
+  ]
+  static let yStrategies: [LineChartYAxis.Ticks] = [
+    .automatic, .count(0), .count(1), .count(5), .count(Int.max),
+    .every(stride: 3), .every(stride: 100), .every(stride: 1e-12), .every(stride: 0),
+    .every(stride: -1), .every(stride: .nan), .every(stride: .infinity),
+  ]
+  static let strides: [Double] = [0.5, 1, 2.5, 3, 7, 100, 1e-12, 0, -1, .nan]
+
+  static var number: FloatingPointFormatStyle<Double> {
+    .number.locale(Locale(identifier: "en_US_POSIX"))
+  }
+
+  @Test("a one-cell X axis keeps only its lower-bound tick (w3c01, w3c03)", arguments: xStrategies)
+  func oneCellXAxis(ticks: LineChartXAxis.Ticks) {
+    let labels = xAxisTickLabels(
+      domain: 0...10, ticks: ticks, format: .number(Self.number), plotWidth: 1)
+    #expect(labels == [AxisTickLabel(col: 0, text: "0")])
+  }
+
+  @Test("a nonpositive X plot width caps like one cell (w3c04)", arguments: [0, -3])
+  func nonpositiveXWidth(plotWidth: Int) {
+    let labels = xAxisTickLabels(
+      domain: 0...10, ticks: .count(5), format: .number(Self.number), plotWidth: plotWidth)
+    #expect(labels == [AxisTickLabel(col: 0, text: "0")])
+  }
+
+  @Test("a one-cell Y axis keeps only its upper-bound tick (w3c02, w3c05)", arguments: yStrategies)
+  func oneCellYAxis(ticks: LineChartYAxis.Ticks) {
+    let labels = yAxisTickLabels(domain: 0...10, ticks: ticks, format: Self.number, plotHeight: 1)
+    #expect(labels == [AxisTickLabel(row: 0, text: "10")])
+  }
+
+  @Test("a nonpositive Y plot height caps like one cell (w3c06)", arguments: [0, -3])
+  func nonpositiveYHeight(plotHeight: Int) {
+    let labels = yAxisTickLabels(
+      domain: 0...10, ticks: .count(5), format: Self.number, plotHeight: plotHeight)
+    #expect(labels == [AxisTickLabel(row: 0, text: "10")])
+  }
+
+  @Test("a two-cell X axis keeps both endpoint ticks (w3c11)", arguments: xStrategies)
+  func twoCellXAxis(ticks: LineChartXAxis.Ticks) {
+    let labels = xAxisTickLabels(
+      domain: 0...10, ticks: ticks, format: .number(Self.number), plotWidth: 2)
+    #expect(labels == [AxisTickLabel(col: 0, text: "0"), AxisTickLabel(col: 1, text: "10")])
+  }
+
+  @Test("a two-cell Y axis keeps both endpoint ticks (w3c12)", arguments: yStrategies)
+  func twoCellYAxis(ticks: LineChartYAxis.Ticks) {
+    let labels = yAxisTickLabels(domain: 0...10, ticks: ticks, format: Self.number, plotHeight: 2)
+    #expect(labels == [AxisTickLabel(row: 0, text: "10"), AxisTickLabel(row: 1, text: "0")])
+  }
+
+  @Test(
+    "counted ticks on wider axes stay evenly spaced in distinct cells (w3c13)", arguments: 2...16)
+  func countedTicksOnWiderAxes(cells: Int) {
+    for n in 0...20 {
+      let x = xAxisTickLabels(
+        domain: 0...10, ticks: .count(n), format: .number(Self.number), plotWidth: cells)
+      let y = yAxisTickLabels(
+        domain: 0...10, ticks: .count(n), format: Self.number, plotHeight: cells)
+      #expect(x.count == min(max(2, n), cells), "x count(\(n))")
+      #expect(y.count == min(max(2, n), cells), "y count(\(n))")
+      expectEndpointSpread(x.map(\.col), cells: cells)
+      expectEndpointSpread(y.map(\.row), cells: cells)
+      #expect(x.first?.text == "0" && x.last?.text == "10")
+      #expect(y.first?.text == "10" && y.last?.text == "0")
+    }
+  }
+
+  @Test(
+    "stride ticks on wider axes stay evenly spaced in distinct cells (w3c14)", arguments: 2...16)
+  func strideTicksOnWiderAxes(cells: Int) {
+    for stride in Self.strides {
+      let x = xAxisTickLabels(
+        domain: 0...10, ticks: .every(stride: stride), format: .number(Self.number),
+        plotWidth: cells)
+      let y = yAxisTickLabels(
+        domain: 0...10, ticks: .every(stride: stride), format: Self.number, plotHeight: cells)
+      #expect((2...cells).contains(x.count), "x every(\(stride))")
+      #expect((2...cells).contains(y.count), "y every(\(stride))")
+      expectEndpointSpread(x.map(\.col), cells: cells)
+      expectEndpointSpread(y.map(\.row), cells: cells)
+      #expect(x.first?.text == "0" && x.last?.text == "10")
+      #expect(y.first?.text == "10" && y.last?.text == "0")
+    }
+  }
+
+  @Test("a degenerate span keeps its single label (w3c15)", arguments: [1, 8])
+  func degenerateSpan(cells: Int) {
+    let x = xAxisTickLabels(
+      domain: 7...7, ticks: .count(5), format: .number(Self.number), plotWidth: cells)
+    let y = yAxisTickLabels(domain: 7...7, ticks: .count(5), format: Self.number, plotHeight: cells)
+    #expect(x == [AxisTickLabel(col: 0, text: "7")])
+    #expect(y == [AxisTickLabel(row: 0, text: "7")])
+  }
+
+  @Test("a one-cell calendar axis keeps its aligned tick (w3c16)")
+  func oneCellCalendarAxis() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = try #require(TimeZone(identifier: "UTC"))
+    calendar.locale = Locale(identifier: "en_US_POSIX")
+    let start = try #require(calendar.date(from: DateComponents(year: 2024, month: 1, day: 15)))
+    let end = try #require(calendar.date(from: DateComponents(year: 2024, month: 3, day: 15)))
+    let labels = xAxisTickLabels(
+      domain: start.timeIntervalSinceReferenceDate...end.timeIntervalSinceReferenceDate,
+      ticks: .dates(every: .month),
+      format: .date(.dateTime.month(.abbreviated).locale(Locale(identifier: "en_US_POSIX"))),
+      plotWidth: 1,
+      calendar: calendar
+    )
+    #expect(labels == [AxisTickLabel(col: 0, text: "Feb")])
+  }
+
+  /// Ticks start at cell 0, end at the last cell and strictly increase, with every gap
+  /// within one cell of the ideal even spacing.
+  private func expectEndpointSpread(
+    _ positions: [Int], cells: Int, sourceLocation: SourceLocation = #_sourceLocation
+  ) {
+    #expect(positions.first == 0, sourceLocation: sourceLocation)
+    #expect(positions.last == cells - 1, sourceLocation: sourceLocation)
+    guard positions.count > 1 else { return }
+    let ideal = Double(cells - 1) / Double(positions.count - 1)
+    let gaps = zip(positions, positions.dropFirst()).map { $1 - $0 }
+    #expect(
+      gaps.allSatisfy { $0 > 0 && abs(Double($0) - ideal) < 1 }, sourceLocation: sourceLocation)
+  }
+}
+
 @Suite("LineChart modifiers")
 @MainActor
 struct LineChartModifierTests {

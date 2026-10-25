@@ -26,16 +26,12 @@ struct CampaignC1CalendarTests {
     if id == 21 {
       let labels = xAxisTickLabels(
         domain: 0...10, ticks: .count(5), format: .automatic, plotWidth: 1)
-      c1Known("STUI-1175: one-cell axis exceeds its resolution cap") {
-        #expect(labels.count == 1)
-      }
+      #expect(labels.count == 1)
       return
     }
     if id == 22 {
       let labels = yAxisTickLabels(domain: 0...10, ticks: .count(5), format: .number, plotHeight: 1)
-      c1Known("STUI-1175: one-cell axis exceeds its resolution cap") {
-        #expect(labels.count == 1)
-      }
+      #expect(labels.count == 1)
       return
     }
     if id == 23 {

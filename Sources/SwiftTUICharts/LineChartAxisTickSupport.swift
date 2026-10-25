@@ -58,10 +58,10 @@ private func evenlySpacedXTicks(
   plotWidth: Int,
   format: LineChartXAxis.Format
 ) -> [AxisTickLabel] {
-  let count = min(max(2, count), max(2, plotWidth))
+  let count = cellCappedTickCount(count, cells: plotWidth)
   var out: [AxisTickLabel] = []
   for i in 0..<count {
-    let fraction = Double(i) / Double(count - 1)
+    let fraction = evenTickFraction(i, count: count)
     let value = chartInterpolatedValue(fraction, in: domain)
     let col = chartCellOffset(fraction, maximum: plotWidth - 1)
     out.append(AxisTickLabel(col: col, text: formatX(value: value, using: format)))
@@ -175,15 +175,16 @@ func yAxisTickLabels(
   let height = max(1, plotHeight)
   let span = domain.upperBound - domain.lowerBound
 
-  let count: Int
+  let requested: Int
   switch ticks {
   case .automatic:
-    count = min(5, max(2, height))
+    requested = 5
   case .count(let n):
-    count = min(max(2, n), max(2, height))
+    requested = n
   case .every(let stride):
-    count = boundedStrideTickCount(span: span, stride: stride, cells: height)
+    requested = boundedStrideTickCount(span: span, stride: stride, cells: height)
   }
+  let count = cellCappedTickCount(requested, cells: height)
 
   guard span > 0 else {
     return [AxisTickLabel(row: 0, text: format.format(domain.lowerBound))]
@@ -191,7 +192,7 @@ func yAxisTickLabels(
 
   var out: [AxisTickLabel] = []
   for i in 0..<count {
-    let fraction = Double(i) / Double(count - 1)
+    let fraction = evenTickFraction(i, count: count)
     let value = chartInterpolatedValue(1 - fraction, in: domain)
     let row = chartCellOffset(fraction, maximum: height - 1)
     out.append(AxisTickLabel(row: row, text: format.format(value)))
@@ -199,6 +200,21 @@ func yAxisTickLabels(
   return out
 }
 
+/// Caps a requested evenly spaced tick count at one tick per plot cell. An axis with two or
+/// more cells keeps at least its two endpoint ticks. A one-cell axis resolves only one value,
+/// so it keeps a single tick.
+private func cellCappedTickCount(_ requested: Int, cells: Int) -> Int {
+  min(max(2, requested), max(1, cells))
+}
+
+/// The plot fraction of evenly spaced tick `index`. A lone tick sits at fraction 0, the tick
+/// that cell 0 carries on every larger axis: the X lower bound or the Y upper bound.
+private func evenTickFraction(_ index: Int, count: Int) -> Double {
+  count > 1 ? Double(index) / Double(count - 1) : 0
+}
+
+/// The tick count requested by an approximate numeric stride. `cellCappedTickCount` applies
+/// the per-cell cap.
 private func boundedStrideTickCount(span: Double, stride: Double, cells: Int) -> Int {
   let limit = max(2, cells)
   guard stride.isFinite, stride > 0 else { return min(5, limit) }

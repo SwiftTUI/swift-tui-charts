@@ -80,7 +80,9 @@ would overflow. Stacked widths normalize finite weights before summing them;
 zero and missing segments receive no cells. An explicit total larger than
 the observed sum retains unfilled track capacity after rounding.
 
-Axis tick generation is bounded by plot resolution (with a minimum of two
-numeric endpoint ticks). Zero, negative, and nonfinite numeric strides use the
+Axis tick generation is bounded by plot resolution, with at most one numeric
+tick per cell. Numeric axes with two or more cells keep a minimum of two
+endpoint ticks; a one-cell numeric axis has a single tick, the X lower bound or
+the Y upper bound. Zero, negative, and nonfinite numeric strides use the
 automatic count. Calendar ticks remain aligned to the requested boundary and
 are thinned across the full domain at the available horizontal resolution.

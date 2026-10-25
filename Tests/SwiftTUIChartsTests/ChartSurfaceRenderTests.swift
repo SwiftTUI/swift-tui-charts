@@ -1,3 +1,4 @@
+import Foundation
 import SwiftTUICharts
 import SwiftTUIRuntime
 import Testing
@@ -293,5 +294,23 @@ struct ChartSurfaceRenderTests {
       ]
     }
     #expect(plot == expected)
+  }
+
+  // STUI-1175: a one-row plot has a single Y tick cell. The row shows its first
+  // tick, the upper bound, both before and after the one-tick-per-cell cap.
+  @Test("one-row LineChart labels its plot row with the upper bound (w3c17)")
+  func oneRowLineChartLabelsUpperBound() {
+    let points: [LineChartPoint] = [.init(x: 0, y: 0), .init(x: 10, y: 10)]
+    let artifacts = DefaultRenderer().render(
+      LineChart("Trend", series: [.init("trend", points: points)], height: 1, width: 20)
+        .chartYAxis(.values(count: 5, format: .number.locale(Locale(identifier: "en_US_POSIX"))))
+        .chartXAxis(.hidden)
+        .chartLegend(.hidden),
+      context: .init(identity: testIdentity("OneRowLineChart")),
+      proposal: .init(width: 20, height: 6)
+    )
+    let lines = artifacts.rasterSurface.lines
+    #expect(lines.filter { $0.hasPrefix("    10┼") }.count == 1)
+    #expect(!lines.contains { $0.hasPrefix("     0┼") })
   }
 }
