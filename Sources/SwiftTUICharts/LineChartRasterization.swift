@@ -120,6 +120,9 @@ private func dataPointGlyph(
 
   if previous == nil, let next {
     if next.row == current.row { return "─" }
+    // `drawSegment` leaves the source horizontally toward the next sample's column,
+    // so a descending-X source opens left, mirroring the ascending glyphs.
+    if next.col < current.col { return next.row > current.row ? "╮" : "╯" }
     return next.row > current.row ? "╭" : "╰"
   }
 
@@ -148,7 +151,8 @@ private func dataPointGlyph(
 }
 
 /// Renders the `.area` style.
-/// It fills every cell between the line and `baselineRow` with `▒`.
+/// It fills every cell between the line and `baselineRow` with `▒`, on whichever side of the
+/// baseline the line lies: down from a line above it and up from a line below it.
 /// Then it draws the line on top.
 func rasterizeArea(
   points: [LineChartPoint],
@@ -169,15 +173,11 @@ func rasterizeArea(
   let clampedBaseline = min(max(baselineRow, 0), height - 1)
 
   for col in 0..<width {
-    var topRow: Int?
-    for row in 0..<height where lineGrid[row][col] != nil {
-      topRow = row
-      break
-    }
-    guard let topRow else { continue }
-    let fillStart = topRow + 1
-    let fillEnd = clampedBaseline
-    guard fillStart <= fillEnd else { continue }
+    guard let topRow = (0..<height).first(where: { lineGrid[$0][col] != nil }),
+      let bottomRow = (0..<height).last(where: { lineGrid[$0][col] != nil })
+    else { continue }
+    let fillStart = min(topRow, clampedBaseline)
+    let fillEnd = max(bottomRow, clampedBaseline)
     for row in fillStart...fillEnd where grid[row][col] == nil {
       grid[row][col] = LineRasterCell(glyph: "▒")
     }

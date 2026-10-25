@@ -96,8 +96,10 @@ private func dateStrideXTicks(
   for column in 0..<max(1, plotWidth) {
     let fraction = Double(column) / Double(max(1, plotWidth - 1))
     let sample = Date(timeIntervalSinceReferenceDate: chartInterpolatedValue(fraction, in: domain))
-    let current = nextStrideBoundary(after: sample, component: component, calendar: calendar)
-    guard current <= endDate, current != previous else { continue }
+    guard
+      let current = nextStrideBoundary(after: sample, component: component, calendar: calendar),
+      current <= endDate, current != previous
+    else { continue }
     let value = current.timeIntervalSinceReferenceDate
     let col = xCell(value: value, domain: domain, plotWidth: plotWidth)
     out.append(AxisTickLabel(col: col, text: formatX(value: value, using: tzPinnedFormat)))
@@ -119,11 +121,14 @@ private func pinTimezone(
   }
 }
 
+/// Returns the first `component` boundary at or after `date`, or `nil` when the calendar cannot
+/// advance to one. The result never precedes `date`, so a sample inside the domain cannot
+/// produce a tick before the domain's start.
 private func nextStrideBoundary(
   after date: Date,
   component: Calendar.Component,
   calendar: Calendar
-) -> Date {
+) -> Date? {
   var truncated = date
   switch component {
   case .day:
@@ -139,10 +144,15 @@ private func nextStrideBoundary(
   default:
     break
   }
-  if truncated < date, let next = calendar.date(byAdding: component, value: 1, to: truncated) {
-    return next
-  }
-  return truncated
+  guard truncated < date else { return truncated }
+  // Foundation's date addition ignores `.quarter` and returns its input unchanged,
+  // so a quarter advances as three months.
+  let next =
+    component == .quarter
+    ? calendar.date(byAdding: .month, value: 3, to: truncated)
+    : calendar.date(byAdding: component, value: 1, to: truncated)
+  guard let next, next >= date else { return nil }
+  return next
 }
 
 func formatX(value: Double, using format: LineChartXAxis.Format) -> String {

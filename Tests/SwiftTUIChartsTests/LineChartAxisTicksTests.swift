@@ -163,6 +163,67 @@ struct LineChartXAxisTickTests {
     )
     #expect(labels.map(\.text).contains("Feb"))
   }
+
+  // Calendar ticks lie on stride boundaries inside the domain (STUI-1176). Columns
+  // are round(days from start / domain days × 79) on an 80-column plot.
+  @Test(
+    "calendar ticks stay on stride boundaries inside the domain",
+    arguments: [
+      CalendarTickCase(
+        "w2c01/w2c02 quarter from mid-February", from: (2024, 2, 15), to: (2024, 8, 1),
+        stride: .quarter, texts: ["Apr", "Jul"], columns: [22, 64]),
+      CalendarTickCase(
+        "w2c03 quarter across a year boundary", from: (2023, 11, 10), to: (2024, 5, 1),
+        stride: .quarter, texts: ["Jan", "Apr"], columns: [24, 65]),
+      CalendarTickCase(
+        "w2c04 quarter without an interior boundary", from: (2024, 2, 15), to: (2024, 3, 20),
+        stride: .quarter, texts: [], columns: []),
+      CalendarTickCase(
+        "w2c05 quarter starting on a boundary", from: (2024, 4, 1), to: (2024, 12, 31),
+        stride: .quarter, texts: ["Apr", "Jul", "Oct"], columns: [0, 26, 53]),
+      CalendarTickCase(
+        "w2c06 month without an interior boundary", from: (2024, 2, 3), to: (2024, 2, 20),
+        stride: .month, texts: [], columns: []),
+    ])
+  func calendarTicksStayInsideDomain(_ tickCase: CalendarTickCase) throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = try #require(TimeZone(identifier: "UTC"))
+    calendar.locale = Locale(identifier: "en_US_POSIX")
+    let start = try #require(calendar.date(from: tickCase.start))
+    let end = try #require(calendar.date(from: tickCase.end))
+    let labels = xAxisTickLabels(
+      domain: start.timeIntervalSinceReferenceDate...end.timeIntervalSinceReferenceDate,
+      ticks: .dates(every: tickCase.stride),
+      format: .date(.dateTime.month(.abbreviated).locale(Locale(identifier: "en_US_POSIX"))),
+      plotWidth: 80,
+      calendar: calendar
+    )
+    #expect(labels.map(\.text) == tickCase.texts)
+    #expect(labels.map(\.col) == tickCase.columns)
+  }
+}
+
+struct CalendarTickCase: Sendable, CustomTestStringConvertible {
+  let name: String
+  let start: DateComponents
+  let end: DateComponents
+  let stride: DateAxisStride
+  let texts: [String]
+  let columns: [Int]
+
+  init(
+    _ name: String, from: (Int, Int, Int), to: (Int, Int, Int), stride: DateAxisStride,
+    texts: [String], columns: [Int]
+  ) {
+    self.name = name
+    self.start = DateComponents(year: from.0, month: from.1, day: from.2)
+    self.end = DateComponents(year: to.0, month: to.1, day: to.2)
+    self.stride = stride
+    self.texts = texts
+    self.columns = columns
+  }
+
+  var testDescription: String { name }
 }
 
 @Suite("LineChart modifiers")

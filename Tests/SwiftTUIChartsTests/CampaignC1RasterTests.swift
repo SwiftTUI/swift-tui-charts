@@ -18,15 +18,11 @@ struct CampaignC1RasterTests {
     case 41:
       let grid = area([.init(x: 2, y: -1)], baseline: 0)
       #expect(grid[3][2]?.glyph == "•")
-      c1Known("STUI-1177: area fill omits cells above the line") {
-        #expect((0...2).allSatisfy { grid[$0][2]?.glyph == "▒" })
-      }
+      #expect((0...2).allSatisfy { grid[$0][2]?.glyph == "▒" })
     case 42:
       let grid = area([.init(x: 0, y: 1), .init(x: 2, y: .nan), .init(x: 4, y: -1)], baseline: 2)
       #expect(grid[1][0]?.glyph == "•" && grid[3][4]?.glyph == "•")
-      c1Known("STUI-1177: area fill omits cells above the line") {
-        #expect(grid[2][0]?.glyph == "▒" && grid[2][4]?.glyph == "▒")
-      }
+      #expect(grid[2][0]?.glyph == "▒" && grid[2][4]?.glyph == "▒")
     case 43:
       let grid = area([.init(x: 2, y: 0)], baseline: 99)
       #expect(grid[2][2]?.glyph == "•")
@@ -34,9 +30,7 @@ struct CampaignC1RasterTests {
     case 44:
       let grid = area([.init(x: 2, y: 0)], baseline: -10)
       #expect(grid[2][2]?.glyph == "•")
-      c1Known("STUI-1177: area fill omits cells above the line") {
-        #expect(grid[0][2]?.glyph == "▒" && grid[1][2]?.glyph == "▒")
-      }
+      #expect(grid[0][2]?.glyph == "▒" && grid[1][2]?.glyph == "▒")
     case 45:
       let grid = area([.init(x: 0, y: 1), .init(x: 2, y: .nan), .init(x: 4, y: 1)], baseline: 4)
       #expect(grid.allSatisfy { $0[1] == nil && $0[2] == nil && $0[3] == nil })
@@ -49,9 +43,7 @@ struct CampaignC1RasterTests {
       #expect((0...4).allSatisfy { grid[4][$0] != nil && grid[$0][0] != nil })
       // Authored direction leaves the first sample toward its left neighbor.
       // Accept every connector with a left port; do not mandate an exact glyph.
-      c1Known("STUI-1178: descending-X source connector points right") {
-        #expect("─╮╯".contains(grid[4][4]?.glyph ?? " "))
-      }
+      #expect("─╮╯".contains(grid[4][4]?.glyph ?? " "))
     case 48:
       let grid = line([.init(x: 2, y: -2), .init(x: 2, y: 2)])
       #expect((0...4).allSatisfy { grid[$0][2] != nil })

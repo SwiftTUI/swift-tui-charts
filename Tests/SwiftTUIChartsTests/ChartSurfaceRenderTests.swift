@@ -245,4 +245,53 @@ struct ChartSurfaceRenderTests {
     #expect(surface.contains("7"))
     #expect(surface.contains("▒") || surface.contains("▓") || surface.contains("█"))
   }
+
+  // STUI-1177: an area shades from its line to the chart baseline on both sides.
+  // The 20×5 plot maps X 0...19 to columns and Y 1...-1 to rows 0...4, so zero is
+  // row 2 and the automatic baseline is the bottom row.
+  @Test(
+    "LineChart area shades toward its baseline from either side (w2c15, w2c16)",
+    arguments: [LineChartBaseline.zero, .auto])
+  func lineChartAreaShadesTowardBaseline(baseline: LineChartBaseline) throws {
+    let points: [LineChartPoint] = [
+      .init(x: 0, y: 1), .init(x: 9, y: 1), .init(x: 10, y: .nan),
+      .init(x: 11, y: -1), .init(x: 19, y: -1),
+    ]
+    let artifacts = DefaultRenderer().render(
+      LineChart("Net", series: [.init("net", points: points, style: .area)], height: 5, width: 20)
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
+        .chartLegend(.hidden)
+        .chartBaseline(baseline),
+      context: .init(identity: testIdentity("AreaBaseline")),
+      proposal: .init(width: 20, height: 8)
+    )
+    let lines = artifacts.rasterSurface.lines
+    try #require(lines.count >= 6)
+    // The header occupies the first row; the five plot rows follow it.
+    let plot = lines[1...5].map { line in
+      let cells = String(line.prefix(20))
+      return cells + String(repeating: " ", count: 20 - cells.count)
+    }
+    let expected: [String]
+    switch baseline {
+    case .zero:
+      expected = [
+        "──────────          ",
+        "▒▒▒▒▒▒▒▒▒▒          ",
+        "▒▒▒▒▒▒▒▒▒▒ ▒▒▒▒▒▒▒▒▒",
+        "           ▒▒▒▒▒▒▒▒▒",
+        "           ─────────",
+      ]
+    case .auto:
+      expected = [
+        "──────────          ",
+        "▒▒▒▒▒▒▒▒▒▒          ",
+        "▒▒▒▒▒▒▒▒▒▒          ",
+        "▒▒▒▒▒▒▒▒▒▒          ",
+        "▒▒▒▒▒▒▒▒▒▒ ─────────",
+      ]
+    }
+    #expect(plot == expected)
+  }
 }

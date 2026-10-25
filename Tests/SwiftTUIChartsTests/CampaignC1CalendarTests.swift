@@ -107,13 +107,7 @@ struct CampaignC1CalendarTests {
       domain: start.timeIntervalSinceReferenceDate...end.timeIntervalSinceReferenceDate,
       ticks: .dates(every: stride), format: .date(format.locale(Locale(identifier: "en_US_POSIX"))),
       plotWidth: id == 29 ? 48 : 80, calendar: calendar)
-    if id == 27 {
-      c1Known("STUI-1176: quarter boundary precedes the domain") {
-        #expect(labels.map(\.text) == expected)
-      }
-    } else {
-      #expect(labels.map(\.text) == expected)
-    }
+    #expect(labels.map(\.text) == expected)
     if id == 29 { #expect(labels.map(\.col) == [0, 24, 47]) }
   }
 

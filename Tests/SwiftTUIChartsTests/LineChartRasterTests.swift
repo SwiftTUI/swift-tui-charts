@@ -3,6 +3,25 @@ import Testing
 
 @testable import SwiftTUICharts
 
+/// One string per raster row; `·` marks an empty cell.
+private func rasterRows(_ grid: [[LineRasterCell?]]) -> [String] {
+  grid.map { String($0.map { $0?.glyph ?? "·" }) }
+}
+
+/// A 5×5 plot over X 0...4 and Y -2...2: X maps to its column, Y 2...-2 to rows 0...4.
+private let fiveCellDomain = LineChartDomain(x: 0...4, y: -2...2)
+
+private func fiveCellLine(_ points: [LineChartPoint]) -> [String] {
+  rasterRows(rasterizeLine(points: points, domain: fiveCellDomain, plotWidth: 5, plotHeight: 5))
+}
+
+private func fiveCellArea(_ points: [LineChartPoint], baselineRow: Int) -> [String] {
+  rasterRows(
+    rasterizeArea(
+      points: points, domain: fiveCellDomain, plotWidth: 5, plotHeight: 5,
+      baselineRow: baselineRow))
+}
+
 @Suite("LineChart raster helpers")
 struct LineChartCellMappingTests {
   @Test("xCell maps lower bound to column 0")
@@ -106,6 +125,82 @@ struct LineChartLineRasterTests {
     )
     #expect(grid[3][3]?.glyph == "─")
   }
+
+  // Samples keep their authored order (STUI-1178). A source leaves horizontally
+  // toward the next sample's column, so a descending source opens to the left. It
+  // mirrors the ascending source glyph, including its opening toward the next row.
+
+  @Test("descending source rising to its successor opens left (w2c21)")
+  func descendingRisingSourceOpensLeft() {
+    #expect(
+      fiveCellLine([.init(x: 4, y: -2), .init(x: 0, y: 2)]) == [
+        "╭····",
+        "│····",
+        "│····",
+        "│····",
+        "╰───╯",
+      ])
+  }
+
+  @Test("descending source falling to its successor opens left (w2c22)")
+  func descendingFallingSourceOpensLeft() {
+    #expect(
+      fiveCellLine([.init(x: 4, y: 2), .init(x: 0, y: -2)]) == [
+        "╭───╮",
+        "│····",
+        "│····",
+        "│····",
+        "╰····",
+      ])
+  }
+
+  @Test("descending three-sample path joins every consecutive sample (w2c23)")
+  func descendingPathJoinsConsecutiveSamples() {
+    #expect(
+      fiveCellLine([.init(x: 4, y: 0), .init(x: 2, y: 2), .init(x: 0, y: -2)]) == [
+        "╭─╮··",
+        "│·│··",
+        "│·╰─╯",
+        "│····",
+        "╰····",
+      ])
+  }
+
+  @Test("ascending, level and vertical sources keep their glyphs (w2c24-w2c26)")
+  func nonDescendingSourcesKeepTheirGlyphs() {
+    #expect(
+      fiveCellLine([.init(x: 0, y: -2), .init(x: 4, y: 2)]) == [
+        "····╭",
+        "····│",
+        "····│",
+        "····│",
+        "╰───╯",
+      ])
+    #expect(
+      fiveCellLine([.init(x: 0, y: 2), .init(x: 4, y: -2)]) == [
+        "╭───╮",
+        "····│",
+        "····│",
+        "····│",
+        "····╰",
+      ])
+    #expect(
+      fiveCellLine([.init(x: 4, y: 0), .init(x: 0, y: 0)]) == [
+        "·····",
+        "·····",
+        "─────",
+        "·····",
+        "·····",
+      ])
+    #expect(
+      fiveCellLine([.init(x: 2, y: -2), .init(x: 2, y: 2)]) == [
+        "··╭··",
+        "··│··",
+        "··│··",
+        "··│··",
+        "··╰··",
+      ])
+  }
 }
 
 @Suite("LineChart area rasterization")
@@ -141,6 +236,51 @@ struct LineChartAreaRasterTests {
     for col in 0..<2 {
       #expect(grid[0][col] == nil)
     }
+  }
+
+  // The fill runs from the line to the baseline on whichever side of it the line
+  // lies (STUI-1177). The baseline row is part of the fill on both sides.
+
+  @Test("area shades down to the baseline above it and up from the line below it (w2c14)")
+  func areaShadesTowardBaselineOnBothSides() {
+    let rows = fiveCellArea(
+      [
+        .init(x: 0, y: 2), .init(x: 1, y: 2), .init(x: 2, y: .nan),
+        .init(x: 3, y: -2), .init(x: 4, y: -2),
+      ],
+      baselineRow: 2)
+    #expect(
+      rows == [
+        "──···",
+        "▒▒···",
+        "▒▒·▒▒",
+        "···▒▒",
+        "···──",
+      ])
+  }
+
+  @Test("area on its baseline row adds no fill on either side (w2c17)")
+  func areaOnBaselineAddsNoFill() {
+    #expect(
+      fiveCellArea([.init(x: 0, y: 0), .init(x: 4, y: 0)], baselineRow: 2) == [
+        "·····",
+        "·····",
+        "─────",
+        "·····",
+        "·····",
+      ])
+  }
+
+  @Test("area connector crossing its baseline keeps its fill (w2c18)")
+  func areaCrossingConnectorKeepsFill() {
+    #expect(
+      fiveCellArea([.init(x: 0, y: 2), .init(x: 4, y: -2)], baselineRow: 2) == [
+        "╭───╮",
+        "▒▒▒▒│",
+        "▒▒▒▒│",
+        "····│",
+        "····╰",
+      ])
   }
 }
 
