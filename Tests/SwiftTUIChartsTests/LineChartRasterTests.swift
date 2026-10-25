@@ -201,6 +201,71 @@ struct LineChartLineRasterTests {
         "··╰··",
       ])
   }
+
+  // An interior sample whose successor shares its column leaves vertically
+  // (STUI-1213). Its glyph joins the arrival to that vertical departure; every
+  // other successor still leaves horizontally.
+
+  @Test(
+    "interior sample leaves vertically toward an equal-column successor (w2c31-w2c36)",
+    arguments: [
+      RasterCase(
+        "w2c31 from above, down", [(0, 2), (2, 0), (2, -2)],
+        ["╭─╮··", "··│··", "··│··", "··│··", "··╰··"]),
+      RasterCase(
+        "w2c32 descending from above, down", [(4, 2), (2, 0), (2, -2)],
+        ["··╭─╮", "··│··", "··│··", "··│··", "··╰··"]),
+      RasterCase(
+        "w2c33 from below, up", [(0, -2), (2, 0), (2, 2)],
+        ["··╭··", "··│··", "··│··", "··│··", "╰─╯··"]),
+      RasterCase(
+        "w2c34 from the left, up", [(0, 0), (2, 0), (2, 2)],
+        ["··╭··", "··│··", "──╯··", "·····", "·····"]),
+      RasterCase(
+        "w2c35 from the right, down", [(4, 0), (2, 0), (2, -2)],
+        ["·····", "·····", "··╭──", "··│··", "··╰··"]),
+      RasterCase(
+        "w2c36 vertical reversal", [(2, 2), (2, -2), (2, 0)],
+        ["··╭··", "··│··", "··╭··", "··│··", "··│··"]),
+    ])
+  func interiorSampleLeavesVertically(_ rasterCase: RasterCase) {
+    #expect(fiveCellLine(rasterCase.points) == rasterCase.rows)
+  }
+
+  @Test(
+    "horizontal interior departures and equal-column first departures keep their glyphs (w2c41-w2c44)",
+    arguments: [
+      RasterCase(
+        "w2c41 ascending interior", [(0, 2), (2, 0), (4, -2)],
+        ["╭─╮··", "··│··", "··╰─╮", "····│", "····╰"]),
+      RasterCase(
+        "w2c42 descending interior", [(4, -2), (2, 0), (0, 2)],
+        ["╭····", "│····", "╰─╮··", "··│··", "··╰─╯"]),
+      RasterCase(
+        "w2c43 level interior", [(0, 0), (2, 0), (4, 0)],
+        ["·····", "·····", "─────", "·····", "·····"]),
+      RasterCase(
+        "w2c44 equal-column first departure", [(2, 2), (2, 0), (4, 0)],
+        ["··╭··", "··│··", "··╰──", "·····", "·····"]),
+    ])
+  func horizontalInteriorDeparturesKeepTheirGlyphs(_ rasterCase: RasterCase) {
+    #expect(fiveCellLine(rasterCase.points) == rasterCase.rows)
+  }
+}
+
+/// A line on the 5×5 test domain and its expected rows (`·` marks an empty cell).
+struct RasterCase: Sendable, CustomTestStringConvertible {
+  let name: String
+  let points: [LineChartPoint]
+  let rows: [String]
+
+  init(_ name: String, _ points: [(Double, Double)], _ rows: [String]) {
+    self.name = name
+    self.points = points.map { LineChartPoint(x: $0.0, y: $0.1) }
+    self.rows = rows
+  }
+
+  var testDescription: String { name }
 }
 
 @Suite("LineChart area rasterization")

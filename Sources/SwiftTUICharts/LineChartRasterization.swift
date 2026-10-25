@@ -137,6 +137,21 @@ private func dataPointGlyph(
 
   guard let previous, let next else { return "•" }
 
+  // `drawSegment` draws a segment to an equal-column successor as a vertical run in
+  // this column, so the sample leaves vertically. Every other successor is left
+  // horizontally, which the table below covers.
+  if next.col == current.col, next.row != current.row {
+    if previous.row != current.row { return "│" }
+    if previous.col != current.col {
+      switch (previous.col < current.col, next.row > current.row) {
+      case (true, true): return "╮"
+      case (true, false): return "╯"
+      case (false, true): return "╭"
+      case (false, false): return "╰"
+      }
+    }
+  }
+
   let exitRight = next.col > current.col
   if previous.row == current.row {
     return "─"
