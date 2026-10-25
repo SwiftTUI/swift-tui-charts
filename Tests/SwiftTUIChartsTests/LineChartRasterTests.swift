@@ -368,3 +368,130 @@ struct LineChartStepRasterTests {
     #expect(jumpColumnHasFill)
   }
 }
+
+private func fiveCellStep(_ points: [LineChartPoint]) -> [String] {
+  rasterRows(rasterizeStep(points: points, domain: fiveCellDomain, plotWidth: 5, plotHeight: 5))
+}
+
+/// A series with consecutive samples in one cell, the same series without them, and the
+/// handwritten rows of that reduced series (`·` marks an empty cell).
+struct CoincidentRasterCase: Sendable, CustomTestStringConvertible {
+  let name: String
+  let points: [LineChartPoint]
+  let reduced: [LineChartPoint]
+  let rows: [String]
+
+  init(
+    _ name: String, _ points: [(Double, Double)], reduced: [(Double, Double)], _ rows: [String]
+  ) {
+    self.name = name
+    self.points = points.map { LineChartPoint(x: $0.0, y: $0.1) }
+    self.reduced = reduced.map { LineChartPoint(x: $0.0, y: $0.1) }
+    self.rows = rows
+  }
+
+  var testDescription: String { name }
+}
+
+// A sample in the same cell as its predecessor adds no connector and no direction
+// (STUI-1255): an exact duplicate, which `LineChartSeries` accepts in authored order, or a
+// sample that quantizes into that cell. Each series renders as the series without it.
+@Suite("LineChart coincident samples")
+struct LineChartCoincidentSampleTests {
+  @Test(
+    "line glyphs read the nearest distinct neighbours (w3ca01-w3ca07)",
+    arguments: [
+      CoincidentRasterCase(
+        "w3ca01 duplicate before an equal-column successor", [(0, 2), (2, 0), (2, 0), (2, -2)],
+        reduced: [(0, 2), (2, 0), (2, -2)], ["╭─╮··", "··│··", "··│··", "··│··", "··╰··"]),
+      CoincidentRasterCase(
+        "w3ca02 duplicated final sample", [(0, 2), (2, 0), (2, 0)],
+        reduced: [(0, 2), (2, 0)], ["╭─╮··", "··│··", "··╰··", "·····", "·····"]),
+      CoincidentRasterCase(
+        "w3ca03 same-cell sample at a corner", [(0, 2), (2, 0), (2.2, 0.2), (4, 0)],
+        reduced: [(0, 2), (2, 0), (4, 0)], ["╭─╮··", "··│··", "··╰──", "·····", "·····"]),
+      CoincidentRasterCase(
+        "w3ca04 duplicate at a corner", [(0, 2), (2, 0), (2, 0), (4, 0)],
+        reduced: [(0, 2), (2, 0), (4, 0)], ["╭─╮··", "··│··", "··╰──", "·····", "·····"]),
+      CoincidentRasterCase(
+        "w3ca05 duplicated first sample", [(0, 2), (0, 2), (2, 0)],
+        reduced: [(0, 2), (2, 0)], ["╭─╮··", "··│··", "··╰··", "·····", "·····"]),
+      CoincidentRasterCase(
+        "w3ca06 one repeated sample", [(2, 0), (2, 0), (2.2, -0.2)],
+        reduced: [(2, 0)], ["·····", "·····", "··•··", "·····", "·····"]),
+      CoincidentRasterCase(
+        "w3ca07 coincident run between gaps",
+        [(0, 0), (1, .nan), (2, 0), (2, 0), (3, .nan), (4, 0)],
+        reduced: [(0, 0), (1, .nan), (2, 0), (3, .nan), (4, 0)],
+        ["·····", "·····", "•·•·•", "·····", "·····"]),
+    ])
+  func lineGlyphsSkipCoincidentNeighbours(_ rasterCase: CoincidentRasterCase) {
+    #expect(fiveCellLine(rasterCase.reduced) == rasterCase.rows)
+    #expect(fiveCellLine(rasterCase.points) == rasterCase.rows)
+  }
+
+  @Test("w3ca08 an area keeps the line glyph at a duplicate junction")
+  func areaKeepsTheJunctionGlyph() {
+    let rows = ["╭─╮··", "▒▒│··", "▒▒│··", "··│··", "··╰··"]
+    let reduced: [LineChartPoint] = [.init(x: 0, y: 2), .init(x: 2, y: 0), .init(x: 2, y: -2)]
+    #expect(fiveCellArea(reduced, baselineRow: 2) == rows)
+    #expect(
+      fiveCellArea(
+        [.init(x: 0, y: 2), .init(x: 2, y: 0), .init(x: 2, y: 0), .init(x: 2, y: -2)],
+        baselineRow: 2) == rows)
+  }
+
+  @Test(
+    "step rasters draw a coincident sample once (w3ca11-w3ca17)",
+    arguments: [
+      CoincidentRasterCase(
+        "w3ca11 duplicated first sample before a level step", [(0, 0), (0, 0), (4, 0)],
+        reduced: [(0, 0), (4, 0)], ["·····", "·····", "────│", "·····", "·····"]),
+      CoincidentRasterCase(
+        "w3ca12 one repeated sample", [(2, 0), (2, 0)],
+        reduced: [(2, 0)], ["·····", "·····", "··───", "·····", "·····"]),
+      CoincidentRasterCase(
+        "w3ca13 same-cell first sample after a gap", [(0, .nan), (1, 0), (1.2, 0.1), (3, 0)],
+        reduced: [(0, .nan), (1, 0), (3, 0)], ["·····", "·····", "·──│─", "·····", "·····"]),
+      CoincidentRasterCase(
+        "w3ca14 duplicated first sample before a rise", [(0, -2), (0, -2), (2, 2)],
+        reduced: [(0, -2), (2, 2)], ["··│──", "··│··", "··│··", "··│··", "──│··"]),
+      CoincidentRasterCase(
+        "w3ca15 duplicate before an equal-column successor", [(0, 2), (2, 0), (2, 0), (2, -2)],
+        reduced: [(0, 2), (2, 0), (2, -2)], ["──│··", "··│··", "··│··", "··│··", "··│──"]),
+      CoincidentRasterCase(
+        "w3ca16 duplicated final sample", [(0, 2), (2, 0), (2, 0)],
+        reduced: [(0, 2), (2, 0)], ["──│··", "··│··", "··│──", "·····", "·····"]),
+      CoincidentRasterCase(
+        "w3ca17 same-cell sample at a corner", [(0, 2), (2, 0), (2.2, 0.2), (4, 0)],
+        reduced: [(0, 2), (2, 0), (4, 0)], ["──│··", "··│··", "··│─│", "·····", "·····"]),
+    ])
+  func stepDrawsCoincidentSamplesOnce(_ rasterCase: CoincidentRasterCase) {
+    #expect(fiveCellStep(rasterCase.reduced) == rasterCase.rows)
+    #expect(fiveCellStep(rasterCase.points) == rasterCase.rows)
+  }
+
+  @Test("w3ca18 a non-adjacent revisit keeps authored order")
+  func nonAdjacentRevisitKeepsAuthoredOrder() {
+    #expect(
+      fiveCellLine([.init(x: 0, y: 0), .init(x: 2, y: 2), .init(x: 0, y: 0)]) == [
+        "╭─╮··",
+        "│·│··",
+        "╰─╯··",
+        "·····",
+        "·····",
+      ])
+  }
+
+  @Test("w3ca19 coincident samples on either side of a gap stay separate points")
+  func coincidentSamplesAcrossAGapStaySeparate() {
+    #expect(
+      fiveCellLine([.init(x: 2, y: 0), .init(x: 3, y: .nan), .init(x: 2, y: 0)]) == [
+        "·····",
+        "·····",
+        "··•··",
+        "·····",
+        "·····",
+      ])
+  }
+}

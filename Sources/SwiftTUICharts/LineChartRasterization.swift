@@ -7,6 +7,8 @@ struct LineRasterCell: Equatable, Sendable {
 
 /// Maps a series of `(x, y)` points into a `plotHeight × plotWidth` grid.
 /// Points retain authored order; nonfinite points break the line into separate runs.
+/// Consecutive samples in one cell draw as one sample, so glyphs read their arrival and
+/// departure from the nearest distinct neighbours.
 func rasterizeLine(
   points: [LineChartPoint],
   domain: LineChartDomain,
@@ -30,13 +32,7 @@ func rasterizeLine(
     return grid
   }
 
-  let cells: [(col: Int, row: Int)?] = points.map { p in
-    guard p.x.isFinite, p.y.isFinite else { return nil }
-    return (
-      xCell(value: p.x, domain: domain.x, plotWidth: width),
-      yCell(value: p.y, domain: domain.y, plotHeight: height)
-    )
-  }
+  let cells = plotCells(points: points, domain: domain, plotWidth: width, plotHeight: height)
 
   for i in 0..<(cells.count - 1) {
     if let from = cells[i], let to = cells[i + 1] {
@@ -54,6 +50,34 @@ func rasterizeLine(
   }
 
   return grid
+}
+
+/// Maps samples to cells; `nil` marks a nonfinite sample, which breaks the run.
+/// A sample in the same cell as its predecessor adds no connector and no direction (an exact
+/// duplicate, which `LineChartSeries` accepts in authored order, or a sample that quantizes
+/// into that cell), so each run of coincident cells collapses to one. Gaps are kept, so runs
+/// never merge across one, and a non-adjacent revisit of a cell keeps its authored place.
+private func plotCells(
+  points: [LineChartPoint],
+  domain: LineChartDomain,
+  plotWidth: Int,
+  plotHeight: Int
+) -> [(col: Int, row: Int)?] {
+  var cells: [(col: Int, row: Int)?] = []
+  cells.reserveCapacity(points.count)
+  for p in points {
+    guard p.x.isFinite, p.y.isFinite else {
+      cells.append(nil)
+      continue
+    }
+    let cell = (
+      col: xCell(value: p.x, domain: domain.x, plotWidth: plotWidth),
+      row: yCell(value: p.y, domain: domain.y, plotHeight: plotHeight)
+    )
+    if let last = cells.last, let previous = last, previous == cell { continue }
+    cells.append(cell)
+  }
+  return cells
 }
 
 private func drawSegment(
@@ -204,6 +228,7 @@ func rasterizeArea(
 /// It draws a horizontal segment from each sample to the next sample column.
 /// It does not include the next sample column in this segment.
 /// Then it draws a vertical segment to the new Y value in that column.
+/// Consecutive samples in one cell draw as one sample.
 func rasterizeStep(
   points: [LineChartPoint],
   domain: LineChartDomain,
@@ -219,13 +244,7 @@ func rasterizeStep(
 
   guard !points.isEmpty else { return grid }
 
-  let cells: [(col: Int, row: Int)?] = points.map { p in
-    guard p.x.isFinite, p.y.isFinite else { return nil }
-    return (
-      xCell(value: p.x, domain: domain.x, plotWidth: width),
-      yCell(value: p.y, domain: domain.y, plotHeight: height)
-    )
-  }
+  let cells = plotCells(points: points, domain: domain, plotWidth: width, plotHeight: height)
 
   for i in 0..<cells.count {
     guard let here = cells[i] else { continue }

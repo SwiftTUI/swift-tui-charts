@@ -10,25 +10,14 @@ import Testing
 // (X maps to its column, Y 2...-2 to rows 0...4); `·` marks an empty cell.
 @Suite("Wave-2 hunt CA: chart repair neighbours")
 struct Wave2RegressionHuntTests {
-  // MARK: Glyphs beside coincident samples (STUI-1213, STUI-1178)
+  // MARK: Glyphs beside coincident samples (STUI-1213, STUI-1178; repaired by STUI-1255)
 
   @Test("w2ca009 a duplicate sample before an equal-column successor keeps the vertical glyph")
   func w2ca009DuplicateBeforeEqualColumnSuccessorKeepsVerticalGlyph() {
     let withoutDuplicate = huntLine([(0, 2), (2, 0), (2, -2)])
     #expect(withoutDuplicate == ["╭─╮··", "··│··", "··│··", "··│··", "··╰··"])
     let withDuplicate = huntLine([(0, 2), (2, 0), (2, 0), (2, -2)])
-    w2HuntKnown(
-      """
-      NEW-3: a duplicate sample before an equal-column successor renders ─ instead \
-      of │; \
-      dataPointGlyph reads arrival and departure from the immediately adjacent samples, \
-      so a coincident neighbour (duplicate or same-cell sample) hides the real connector \
-      direction; contract: LineChartModels.swift:34-35, docs/ARCHITECTURE.md:73-74; \
-      adjacent STUI-1213, STUI-1178
-      """
-    ) {
-      #expect(withDuplicate == withoutDuplicate)
-    }
+    #expect(withDuplicate == withoutDuplicate)
   }
 
   @Test("w2ca010 a duplicated final sample keeps the port of its vertical arrival")
@@ -36,18 +25,7 @@ struct Wave2RegressionHuntTests {
     let withoutDuplicate = huntLine([(0, 2), (2, 0)])
     #expect(withoutDuplicate == ["╭─╮··", "··│··", "··╰··", "·····", "·····"])
     let withDuplicate = huntLine([(0, 2), (2, 0), (2, 0)])
-    w2HuntKnown(
-      """
-      NEW-3: a duplicated final sample after a vertical arrival renders ─ instead \
-      of ╰; \
-      dataPointGlyph reads arrival and departure from the immediately adjacent samples, \
-      so a coincident neighbour (duplicate or same-cell sample) hides the real connector \
-      direction; contract: LineChartModels.swift:34-35, docs/ARCHITECTURE.md:73-74; \
-      adjacent STUI-1213, STUI-1178
-      """
-    ) {
-      #expect(withDuplicate == withoutDuplicate)
-    }
+    #expect(withDuplicate == withoutDuplicate)
   }
 
   @Test("w2ca011 a sample quantized into its predecessor's cell keeps the corner")
@@ -56,18 +34,7 @@ struct Wave2RegressionHuntTests {
     #expect(withoutNearDuplicate == ["╭─╮··", "··│··", "··╰──", "·····", "·····"])
     // (2.2, 0.2) maps to column 2, row 2, the cell of (2, 0).
     let withNearDuplicate = huntLine([(0, 2), (2, 0), (2.2, 0.2), (4, 0)])
-    w2HuntKnown(
-      """
-      NEW-3: a sample quantized into its predecessor's cell renders ─ instead of the \
-      ╰ corner; \
-      dataPointGlyph reads arrival and departure from the immediately adjacent samples, \
-      so a coincident neighbour (duplicate or same-cell sample) hides the real connector \
-      direction; contract: LineChartModels.swift:34-35, docs/ARCHITECTURE.md:73-74; \
-      adjacent STUI-1213, STUI-1178
-      """
-    ) {
-      #expect(withNearDuplicate == withoutNearDuplicate)
-    }
+    #expect(withNearDuplicate == withoutNearDuplicate)
   }
 
   @Test("w2ca012 a horizontal arrival from the right before an upward equal-column successor")
@@ -143,15 +110,6 @@ struct Wave2RegressionHuntTests {
 }
 
 // MARK: Helpers
-
-/// Preserves an unmarked reproduction while guarding only confirmed assertions.
-private func w2HuntKnown(_ comment: Comment, _ body: () -> Void) {
-  if ProcessInfo.processInfo.environment["SWIFTTUI_W2HUNT_UNMARKED"] == "1" {
-    body()
-  } else {
-    withKnownIssue(comment) { body() }
-  }
-}
 
 private let huntDomain = LineChartDomain(x: 0...4, y: -2...2)
 
