@@ -72,9 +72,11 @@ Line and sparkline samples with NaN or infinite coordinates are gaps. Only
 finite samples determine their domain; line connectors do not cross missing
 samples. Line and step samples retain authored order, including descending
 and duplicate X values. Consecutive samples that fall in one plot cell draw as
-one sample: a series with an exact duplicate, or with a sample that quantizes
-into its predecessor's cell, draws the same raster as the series without that
-sample. Finite domain interpolation remains valid even when the difference
+one sample: within the chart's domain, a series with an exact duplicate, or
+with a sample that quantizes into its predecessor's cell, draws the same
+raster as the series without that sample. A sample that sets the domain's
+extreme still sets it, so removing such a sample rescales the plot. Finite
+domain interpolation remains valid even when the difference
 between its endpoints would overflow `Double`.
 
 Progress-style charts treat nonfinite values or totals as zero contribution.

@@ -35,8 +35,10 @@ struct Wave3RegressionHuntChartTests {
     }
   }
 
-  @Test("w3ca015 a near-duplicate that extends the domain draws the reduced series' raster")
-  func w3ca015NearDuplicateThatExtendsTheDomainKeepsTheReducedRaster() throws {
+  @Test(
+    "w3ca015 a near-duplicate draws the reduced raster within one domain and keeps setting its extreme"
+  )
+  func w3ca015NearDuplicateKeepsTheReducedRasterWithinOneDomain() throws {
     let near: [(Double, Double)] = [(0, 0), (2, 2), (4, 4), (4.04, 4.04)]
     let reduced: [(Double, Double)] = [(0, 0), (2, 2), (4, 4)]
     // LineChart(width: 24, height: 5) plots 16 x 5 cells (LineChartSupport.swift:15-18).
@@ -47,13 +49,16 @@ struct Wave3RegressionHuntChartTests {
     #expect(xCell(value: 4.04, domain: nearDomain.x, plotWidth: 16) == 15)
     #expect(yCell(value: 4, domain: nearDomain.y, plotHeight: 5) == 0)
     #expect(yCell(value: 4.04, domain: nearDomain.y, plotHeight: 5) == 0)
+    // docs/ARCHITECTURE.md: within the chart's domain the series draws the reduced raster.
     let withNear = try w3PublicGrid(near)
+    let reducedInNearDomain = composeSeriesGrids(
+      series: [LineChartSeries("s", points: w3Points(reduced))], domain: nearDomain,
+      plotWidth: 16, plotHeight: 5, baselineRow: 4)
+    #expect(
+      withNear == reducedInNearDomain, "\(w3Rows(withNear)) versus \(w3Rows(reducedInNearDomain))")
+    // The sample still sets the domain's extreme, so removing it rescales the plot (STUI-1289).
     let without = try w3PublicGrid(reduced)
-    w3HuntKnown(
-      "NEW-3: dropping a near-duplicate that is the domain's extreme rescales the public raster ((2,2) at column 7 versus 8); the domain spans every finite sample; contract: docs/ARCHITECTURE.md:74-77; adjacent STUI-1255"
-    ) {
-      #expect(withNear == without, "\(w3Rows(withNear)) versus \(w3Rows(without))")
-    }
+    #expect(withNear != without, "removing the domain extreme should rescale: \(w3Rows(without))")
   }
 
   @Test("w3ca016 inserted exact duplicates never change the line, area or step raster")
@@ -191,15 +196,6 @@ struct Wave3RegressionHuntChartTests {
 }
 
 // MARK: Helpers
-
-/// Preserve an unmarked reproduction while guarding only confirmed assertions.
-private func w3HuntKnown(_ comment: Comment, _ body: () -> Void) {
-  if ProcessInfo.processInfo.environment["SWIFTTUI_W3HUNT_UNMARKED"] == "1" {
-    body()
-  } else {
-    withKnownIssue(comment) { body() }
-  }
-}
 
 private let w3Iterations =
   ProcessInfo.processInfo.environment["SWIFTTUI_STRESS_FULL"] == "1" ? 1_000 : 100
