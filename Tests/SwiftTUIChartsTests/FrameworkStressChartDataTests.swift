@@ -1,5 +1,6 @@
 import Foundation
 import SwiftTUIRuntime
+@_spi(Testing) import SwiftTUITestSupport
 import Testing
 
 @testable import SwiftTUICharts
@@ -17,7 +18,7 @@ private func chartDataExercise<Root: View>(
   makeRoot: (Int) -> Root,
   verify: (Int, RenderSnapshot) -> Void
 ) {
-  let renderer = DefaultRenderer()
+  let renderer = ContractTestRenderer()
   let identity = testIdentity("ChartData", attempt)
 
   for generation in generations {
@@ -30,7 +31,7 @@ private func chartDataExercise<Root: View>(
       ),
       proposal: proposal
     )
-    let fresh = DefaultRenderer().render(
+    let fresh = ContractTestRenderer().render(
       root,
       context: .init(identity: identity),
       proposal: proposal

@@ -1,5 +1,6 @@
 import Foundation
 import SwiftTUIRuntime
+@_spi(Testing) import SwiftTUITestSupport
 import Testing
 
 enum RenderedTextFixtureMode: Sendable {
@@ -70,7 +71,7 @@ func assertRenderedTextFixtures<V: View>(
   identity: Identity = testIdentity("Fixture"),
   environmentValues: EnvironmentValues = .init(),
   mode: RenderedTextFixtureMode = .automatic,
-  renderer: DefaultRenderer = .init()
+  renderer: ContractTestRenderer = .init()
 ) throws {
   try assertRenderedTextFixtures(
     named: fixtureName,
@@ -98,7 +99,7 @@ func assertRenderedTextFixtures<Content: View>(
   identity: Identity = testIdentity("Fixture"),
   environmentValues: EnvironmentValues = .init(),
   mode: RenderedTextFixtureMode = .automatic,
-  renderer: DefaultRenderer = .init(),
+  renderer: ContractTestRenderer = .init(),
   @ViewBuilder view: () -> Content
 ) throws {
   let configurationNames = terminalConfigurations.map(\.fixtureFileName)
@@ -219,7 +220,7 @@ private func renderFixtureSnapshot<V: View>(
   configuration: RenderedTextFixtureTerminalConfiguration,
   identity: Identity,
   environmentValues: EnvironmentValues,
-  renderer: DefaultRenderer,
+  renderer: ContractTestRenderer,
   view: V
 ) -> String {
   var effectiveEnvironmentValues = environmentValues

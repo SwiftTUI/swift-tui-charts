@@ -1,6 +1,7 @@
 import Foundation
 import SwiftTUICharts
 import SwiftTUIRuntime
+@_spi(Testing) import SwiftTUITestSupport
 import Testing
 
 // Public render-behavior assertions for every chart family: each test drives
@@ -12,11 +13,11 @@ import Testing
 struct ChartSurfaceRenderTests {
   @Test("Meter and Sparkline render compact metrics displays")
   func metricsDisplaysRenderCompactTracksAndTrendGlyphs() {
-    let meterArtifacts = DefaultRenderer().render(
+    let meterArtifacts = ContractTestRenderer().render(
       Meter("Health", value: 7, total: 10, tone: .success, barWidth: 8),
       context: .init(identity: testIdentity("MeterDisplay"))
     )
-    let sparklineArtifacts = DefaultRenderer().render(
+    let sparklineArtifacts = ContractTestRenderer().render(
       Sparkline("Trend", values: [1, 3, 2, 5, 8], tone: .warning),
       context: .init(identity: testIdentity("SparklineDisplay"))
     )
@@ -33,7 +34,7 @@ struct ChartSurfaceRenderTests {
 
   @Test("Timeline renders a compact sequence of entries")
   func timelineRendersEntryList() {
-    let timelineArtifacts = DefaultRenderer().render(
+    let timelineArtifacts = ContractTestRenderer().render(
       Timeline([
         .init("Queued", detail: "Awaiting input", tone: .warning),
         .init("Applied", detail: "Value committed", tone: .success),
@@ -50,7 +51,7 @@ struct ChartSurfaceRenderTests {
 
   @Test("Timeline entries without detail collapse to a single row")
   func compactTimelineEntriesDoNotRenderContinuationRows() {
-    let artifacts = DefaultRenderer().render(
+    let artifacts = ContractTestRenderer().render(
       Timeline([
         .init("Value 0 | preset 0", tone: .info),
         .init("Mode inspect | tab flow", tone: .warning),
@@ -67,7 +68,7 @@ struct ChartSurfaceRenderTests {
 
   @Test("BarChart renders labeled bars, summaries, and value text")
   func barChartRendersCompactDashboardBars() {
-    let artifacts = DefaultRenderer().render(
+    let artifacts = ContractTestRenderer().render(
       BarChart(
         "Run Stats",
         entries: [
@@ -92,7 +93,7 @@ struct ChartSurfaceRenderTests {
 
   @Test("BulletChart renders a filled track with a distinct target marker")
   func bulletChartRendersCurrentVsTargetTrack() {
-    let artifacts = DefaultRenderer().render(
+    let artifacts = ContractTestRenderer().render(
       BulletChart(
         "Range",
         value: 4,
@@ -113,7 +114,7 @@ struct ChartSurfaceRenderTests {
 
   @Test("ComparisonChart renders current tracks against baseline markers")
   func comparisonChartRendersCompactComparisonRows() {
-    let artifacts = DefaultRenderer().render(
+    let artifacts = ContractTestRenderer().render(
       ComparisonChart(
         "Run Compare",
         entries: [
@@ -136,7 +137,7 @@ struct ChartSurfaceRenderTests {
 
   @Test("ThresholdGauge renders banded tracks with a positioned marker")
   func thresholdGaugeRendersCompactBands() {
-    let artifacts = DefaultRenderer().render(
+    let artifacts = ContractTestRenderer().render(
       ThresholdGauge(
         "Preset Sync",
         value: 6,
@@ -160,7 +161,7 @@ struct ChartSurfaceRenderTests {
 
   @Test("ColumnChart renders stacked rows plus a compact label strip")
   func columnChartRendersCompactVerticalBars() {
-    let artifacts = DefaultRenderer().render(
+    let artifacts = ContractTestRenderer().render(
       ColumnChart(
         "Preset Flow",
         entries: [
@@ -184,7 +185,7 @@ struct ChartSurfaceRenderTests {
 
   @Test("Legend renders tone-aware markers with compact labels")
   func legendRendersCompactToneKeys() {
-    let artifacts = DefaultRenderer().render(
+    let artifacts = ContractTestRenderer().render(
       Legend(
         items: [
           .init("live", tone: .success),
@@ -205,7 +206,7 @@ struct ChartSurfaceRenderTests {
 
   @Test("StackedBarChart renders a proportional multi-tone track")
   func stackedBarChartRendersCompactSegments() {
-    let artifacts = DefaultRenderer().render(
+    let artifacts = ContractTestRenderer().render(
       StackedBarChart(
         "Run Stats",
         entries: [
@@ -226,7 +227,7 @@ struct ChartSurfaceRenderTests {
 
   @Test("HeatStrip renders intensity cells plus a compact label row")
   func heatStripRendersCompactIntensityRow() {
-    let artifacts = DefaultRenderer().render(
+    let artifacts = ContractTestRenderer().render(
       HeatStrip(
         "Preset Flow",
         entries: [
@@ -258,7 +259,7 @@ struct ChartSurfaceRenderTests {
       .init(x: 0, y: 1), .init(x: 9, y: 1), .init(x: 10, y: .nan),
       .init(x: 11, y: -1), .init(x: 19, y: -1),
     ]
-    let artifacts = DefaultRenderer().render(
+    let artifacts = ContractTestRenderer().render(
       LineChart("Net", series: [.init("net", points: points, style: .area)], height: 5, width: 20)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
@@ -301,7 +302,7 @@ struct ChartSurfaceRenderTests {
   @Test("one-row LineChart labels its plot row with the upper bound (w3c17)")
   func oneRowLineChartLabelsUpperBound() {
     let points: [LineChartPoint] = [.init(x: 0, y: 0), .init(x: 10, y: 10)]
-    let artifacts = DefaultRenderer().render(
+    let artifacts = ContractTestRenderer().render(
       LineChart("Trend", series: [.init("trend", points: points)], height: 1, width: 20)
         .chartYAxis(.values(count: 5, format: .number.locale(Locale(identifier: "en_US_POSIX"))))
         .chartXAxis(.hidden)

@@ -1,5 +1,6 @@
 import Foundation
 import SwiftTUIRuntime
+@_spi(Testing) import SwiftTUITestSupport
 import Testing
 
 @testable import SwiftTUICharts
@@ -24,7 +25,7 @@ struct DenseDashboardQualificationTests {
         )
         .chartLegend(.hidden)
         .frame(width: size.width, height: size.height, alignment: .topLeading)
-        let renderer = DefaultRenderer()
+        let renderer = ContractTestRenderer()
         var durations: [Double] = []
         var snapshot: RenderSnapshot?
         for _ in 0..<3 {

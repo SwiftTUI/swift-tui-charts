@@ -1,5 +1,6 @@
 import Foundation
 import SwiftTUIRuntime
+@_spi(Testing) import SwiftTUITestSupport
 import Testing
 
 @testable import SwiftTUICharts
@@ -179,7 +180,7 @@ struct Wave3RegressionHuntChartTests {
     ]
     for (height, prefixes) in expected.sorted(by: { $0.key < $1.key }) {
       let points: [LineChartPoint] = [.init(x: 0, y: 0), .init(x: 10, y: 10)]
-      let lines = DefaultRenderer().render(
+      let lines = ContractTestRenderer().render(
         LineChart("Trend", series: [.init("trend", points: points)], height: height, width: 20)
           .chartYAxis(.values(count: 5, format: .number.locale(Locale(identifier: "en_US_POSIX"))))
           .chartXAxis(.hidden)
@@ -220,7 +221,7 @@ private func w3PublicGrid(_ points: [(Double, Double)]) throws -> ComposedSeries
 private func w3Surface(
   _ style: LineChartSeriesStyle, _ points: [(Double, Double)], _ name: String
 ) -> [String] {
-  DefaultRenderer().render(
+  ContractTestRenderer().render(
     LineChart(
       "Trend", series: [.init("s", points: w3Points(points), style: style)], height: 6, width: 24),
     context: .init(identity: testIdentity("W3Hunt", name)),

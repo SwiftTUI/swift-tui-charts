@@ -13,7 +13,7 @@ struct ChartAccessibilityTests {
     var environment = EnvironmentValues()
     environment.accessibilityPreferences.differentiateWithoutColor = true
     func output<V: View>(_ view: V) -> String {
-      let raster = DefaultRenderer().render(
+      let raster = ContractTestRenderer().render(
         view,
         context: .init(identity: testIdentity("color"), environmentValues: environment),
         proposal: .init(width: 80, height: 50)
@@ -54,7 +54,7 @@ struct ChartAccessibilityTests {
     environment.accessibilityPreferences.colorProfile = profile
     // The standard profile exercises the independent no-color preference.
     environment.accessibilityPreferences.differentiateWithoutColor = profile == .standard
-    let snapshot = DefaultRenderer().render(
+    let snapshot = ContractTestRenderer().render(
       LineChart(
         "Trend",
         series: [
@@ -77,7 +77,7 @@ struct ChartAccessibilityTests {
 
   @Test("default chart headers and source values remain independently readable")
   func defaultChartSummariesProvideImageAccessibilityLabels() {
-    let artifacts = DefaultRenderer().render(
+    let artifacts = ContractTestRenderer().render(
       VStack(alignment: .leading, spacing: 0) {
         Sparkline("Trend", values: [1, 3, 2])
         BarChart(
@@ -88,7 +88,7 @@ struct ChartAccessibilityTests {
           ]
         )
       },
-      context: ResolveContext(identity: testIdentity("ChartAccessibilityRoot")),
+      context: ContractTestContext(identity: testIdentity("ChartAccessibilityRoot")),
       proposal: .init(width: 40, height: 8)
     )
 
@@ -104,13 +104,13 @@ struct ChartAccessibilityTests {
 
   @Test("generic chart headers preserve authored names alongside source data")
   func customChartWithoutAccessibilityLabelEmitsWarning() {
-    let artifacts = DefaultRenderer().render(
+    let artifacts = ContractTestRenderer().render(
       Sparkline(
         values: [1, 3, 2],
         label: { Text("Trend") },
         summary: { EmptyView() }
       ),
-      context: ResolveContext(identity: testIdentity("CustomChartAccessibilityRoot")),
+      context: ContractTestContext(identity: testIdentity("CustomChartAccessibilityRoot")),
       proposal: .init(width: 40, height: 4)
     )
 

@@ -91,3 +91,16 @@ endpoint ticks; a one-cell numeric axis has a single tick, the X lower bound or
 the Y upper bound. Zero, negative, and nonfinite numeric strides use the
 automatic count. Calendar ticks remain aligned to the requested boundary and
 are thinned across the full domain at the available horizontal resolution.
+
+
+## Snapshot test contract
+
+Default view tests use the `ContractTestRenderer` / `ContractTestContext` adapter.
+The exact 0.20.1 tagged dependency delegates to its public snapshot renderer.
+When the coordination overlay selects `swifttui.swift-host/1`, its temporary
+manifest defines `SWIFTTUI_TEST_CONTRACT_V1` and the adapter uses
+`SwiftTUITestSupport`'s narrow Testing facade. The facade returns committed
+raster/semantic snapshots and accepts identity/environment/invalidation inputs;
+private phase trees and graph mutation are outside its contract. Diagnostic
+counts remain explicit instrumentation, not a fixed performance guarantee.
+The public package keeps its tagged dependency and native default build.

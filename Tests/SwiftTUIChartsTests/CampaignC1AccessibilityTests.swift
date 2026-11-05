@@ -1,4 +1,5 @@
 import SwiftTUIRuntime
+@_spi(Testing) import SwiftTUITestSupport
 import Testing
 
 @testable import SwiftTUICharts
@@ -12,7 +13,7 @@ struct CampaignC1AccessibilityTests {
       _ view: V, height: Int = 24,
       environment: EnvironmentValues = .init()
     ) -> RenderSnapshot {
-      DefaultRenderer().render(
+      ContractTestRenderer().render(
         view,
         context: .init(identity: testIdentity("C1", String(id)), environmentValues: environment),
         proposal: .init(width: 80, height: height))
