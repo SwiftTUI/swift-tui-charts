@@ -11,8 +11,8 @@ on the public `SwiftTUIViews` authoring surface of
 - The package names **no** framework-internal API. There is no
   `PrimitiveView`/`ResolvableView` conformance, no `ResolveContext`, and no
   package-access lowering anywhere in this repository.
-- The single manifest dependency is the `SwiftTUIViews` product, pinned
-  `exact:` to a public `swift-tui` tag. The `SwiftTUIViews` product re-exports
+- The single manifest dependency is the `SwiftTUIViews` product, bounded
+  with `.upToNextMinor(from: "0.21.0")` to public `swift-tui` tags. The `SwiftTUIViews` product re-exports
   `SwiftTUICore`. `SwiftTUICore` re-exports `SwiftTUIGraph` and
   `SwiftTUIPrimitives`. Thus, `import SwiftTUIViews` also provides the value
   vocabulary (`Color`, `AnyShapeStyle`, `SemanticMetadata`, and geometry
@@ -95,12 +95,10 @@ are thinned across the full domain at the available horizontal resolution.
 
 ## Snapshot test contract
 
-Default view tests use the `ContractTestRenderer` / `ContractTestContext` adapter.
-The exact 0.20.1 tagged dependency delegates to its public snapshot renderer.
-When the coordination overlay selects `swifttui.swift-host/1`, its temporary
-manifest defines `SWIFTTUI_TEST_CONTRACT_V1` and the adapter uses
-`SwiftTUITestSupport`'s narrow Testing facade. The facade returns committed
-raster/semantic snapshots and accepts identity/environment/invalidation inputs;
-private phase trees and graph mutation are outside its contract. Diagnostic
-counts remain explicit instrumentation, not a fixed performance guarantee.
-The public package keeps its tagged dependency and native default build.
+View tests use the `ContractTestRenderer` / `ContractTestContext` adapter over
+`SwiftTUITestSupport`'s supported Testing facade (`swifttui.swift-host/1`).
+It returns committed raster/semantic snapshots and accepts identity, environment
+and invalidation inputs. Private phase trees and graph mutation are outside the
+contract. Diagnostic counts are instrumentation, not fixed performance promises.
+The native manifest selects framework `>= 0.21.0` and `< 0.22.0` through a public
+tagged HTTPS dependency. No coordination checkout or compile-time flag is needed.

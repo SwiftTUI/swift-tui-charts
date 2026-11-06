@@ -47,7 +47,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/SwiftTUI/swift-tui.git",
-      exact: "0.20.1"
+      .upToNextMinor(from: "0.21.0")
     ),
     .package(
       url: "https://github.com/swiftlang/swift-docc-plugin.git",
