@@ -100,5 +100,5 @@ View tests use the `ContractTestRenderer` / `ContractTestContext` adapter over
 It returns committed raster/semantic snapshots and accepts identity, environment
 and invalidation inputs. Private phase trees and graph mutation are outside the
 contract. Diagnostic counts are instrumentation, not fixed performance promises.
-The native manifest selects framework `>= 0.21.0` and `< 0.22.0` through a public
+The native manifest selects framework `>= 0.21.0` and `< 1.0.0` through a public
 tagged HTTPS dependency. No coordination checkout or compile-time flag is needed.
