@@ -10,7 +10,7 @@ introduction. [docs/](docs/README.md) holds internal notes.
 for [SwiftTUI](https://github.com/SwiftTUI/swift-tui). Every chart is an
 ordinary SwiftTUI `View` composed from the public `SwiftTUIViews` authoring
 surface. This package uses **no** package-internal framework API. The
-`swift-tui` dependency is a public, tagged HTTPS dependency bounded to the supported minor line. Only the
+`swift-tui` dependency is a public, tagged HTTPS dependency bounded to the supported major line. Only the
 SwiftTUI org coordination overlay can rewrite it to a local path.
 
 ## Build & Test Commands

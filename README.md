@@ -50,8 +50,8 @@ Then add the `SwiftTUICharts` product from `swift-tui-charts`:
 
 ```swift
 dependencies: [
-  .package(url: "https://github.com/SwiftTUI/swift-tui.git", .upToNextMinor(from: "0.21.0")),
-  .package(url: "https://github.com/SwiftTUI/swift-tui-charts.git", .upToNextMinor(from: "0.21.0")),
+  .package(url: "https://github.com/SwiftTUI/swift-tui.git", .upToNextMajor(from: "0.21.0")),
+  .package(url: "https://github.com/SwiftTUI/swift-tui-charts.git", .upToNextMajor(from: "0.21.0")),
 ],
 targets: [
   .executableTarget(
@@ -125,5 +125,5 @@ MIT; see [LICENSE](LICENSE).
 
 ## Version compatibility
 
-See the [compatibility policy](docs/COMPATIBILITY.md) for supported minor lines,
+See the [compatibility policy](docs/COMPATIBILITY.md) for supported major lines,
 independent dependency adoption, and experimental interfaces.

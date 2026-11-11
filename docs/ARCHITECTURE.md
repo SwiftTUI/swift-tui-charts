@@ -12,7 +12,7 @@ on the public `SwiftTUIViews` authoring surface of
   `PrimitiveView`/`ResolvableView` conformance, no `ResolveContext`, and no
   package-access lowering anywhere in this repository.
 - The single manifest dependency is the `SwiftTUIViews` product, bounded
-  with `.upToNextMinor(from: "0.21.0")` to public `swift-tui` tags. The `SwiftTUIViews` product re-exports
+  with `.upToNextMajor(from: "0.21.0")` to public `swift-tui` tags. The `SwiftTUIViews` product re-exports
   `SwiftTUICore`. `SwiftTUICore` re-exports `SwiftTUIGraph` and
   `SwiftTUIPrimitives`. Thus, `import SwiftTUIViews` also provides the value
   vocabulary (`Color`, `AnyShapeStyle`, `SemanticMetadata`, and geometry

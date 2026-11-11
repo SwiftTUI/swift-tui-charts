@@ -42,5 +42,5 @@ baseline diff with the API change.
 ## Releases
 
 Versions are lockstep with the SwiftTUI org (`swift-tui`, `swift-tui-web`,
-and examples). The manifest pins the matching `swift-tui` tag with `exact:`.
+and examples). The manifest accepts compatible `swift-tui` releases up to the next major.
 The org coordination root controls the release sequence and pin checks.
