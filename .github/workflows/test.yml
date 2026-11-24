@@ -196,8 +196,8 @@ jobs:
           set -euo pipefail
           . "${SWIFTLY_HOME_DIR}/env.sh"
           case "$SWIFT_VERSION" in
-            6.4.0)
-              WASM_SDK_CHECKSUM="f07b7be3c586d92d7a07051fc6d303b87ebea67eadc40640ba59d5a8b79aa86d"
+            6.4.3)
+              WASM_SDK_CHECKSUM="5f24408dc9737ce4cb23b7e3ed4306cabfa02cc02f22ab260b14579b955d4b12"
               ;;
             *)
               echo "::error::No pinned wasm SDK checksum for Swift ${SWIFT_VERSION}"
